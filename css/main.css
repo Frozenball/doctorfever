@@ -1,0 +1,25 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700);
+
+body {
+    /*
+        Background image taken at
+        http://www.publicdomainpictures.net/
+        view-image.php?image=13304&picture=rain-on-window
+     */
+    background: url(../img/bg-blurred.jpg) no-repeat center center fixed;
+    background-size: cover;
+
+    padding-top: 120px;
+}
+
+h1 {
+    font-size: 100px;
+    color: rgb(230, 230, 230);
+    font-family: 'Open Sans Condensed', sans-serif;
+    margin-bottom: 60px;
+}
+
+.centerized {
+    width: 800px;
+    margin: 0px auto;
+}
