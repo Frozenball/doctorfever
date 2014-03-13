@@ -20,7 +20,7 @@ h1 {
 }
 
 #state-selectCharacter {
-    background: 358ba0;
+    background: #358ba0;
     background: linear-gradient(to bottom,  #358ba0 0%,#357e90 100%);
 }
 #state-selectCharacter h1 {
@@ -66,19 +66,33 @@ h1 {
     -webkit-transform: scale( 0 );
   }
 }
-#state-loading span {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    background-color: white;
-    border-radius: 30px;
+
+
+#state-fight {
+    background: #356aa0;
+    background: linear-gradient(to bottom,  #356aa0 0%,#356aa0 100%);
 }
-#state-loading span:nth-child(1) {
-    -webkit-animation: loading 1s infinite;
+#state-fight h1 {
+    color: rgb(220, 220, 220);
+    text-align: center;
 }
-#state-loading span:nth-child(2) {
-    -webkit-animation: loading 0.8s infinite;
+#state-fight .fight-wrap {
+    position: absolute;
+    height: 80%;
+    width: 100%;
+    top: 10%;
 }
-#state-loading span:nth-child(3) {
-    -webkit-animation: loading 0.6s infinite;
+#state-fight .field-wrap {
+    position: absolute;
+    height: 100%;
+    width: 30%;
+    background: #111;
+    background: linear-gradient(to bottom,  #333 0%,#000 100%);
 }
+#state-fight .field-wrap#field1{
+    left:10%;
+}
+#state-fight .field-wrap#field2{
+    left:60%;
+}
+
