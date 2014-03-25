@@ -11,11 +11,12 @@ function Game(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.fields = [];
-    this.fields.push(new Field([10, 20]));
-    this.fields.push(new Field([10, 20]));
+    this.fields.push(new Field([6, 12]));
+    this.fields.push(new Field([6, 12]));
     
     //TEMPORARY TEST CODE
     this.fields[0].state.debugRandomize();
+    this.fields[1].state.debugRandomize();
     //this.fields[0].state.set(2, 2, new Puyo(puyoColors[0]));
     /*this.fields[0].state.puyos[3][2] = new Puyo(puyo_colors[1], puyo_types[0]);
     this.fields[0].state.puyos[4][2] = new Puyo(puyo_colors[2], puyo_types[0]);

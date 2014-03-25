@@ -3,7 +3,7 @@
 * @param size [width, height] size of the puyo field(in tiles)
 */
 function FieldState(size) {
-    this.size = size || [10, 20];
+    this.size = size || [6, 12];
     this.puyos = new Array(this.size[0] * this.size[1]);
 }
 FieldState.prototype.set = function(x, y, val) {
@@ -41,14 +41,19 @@ function Field(size) {
 }
 
 Field.prototype.drawBoard = function(game, i) {
-    var sizeX = 32;
-    var sizeY = 32;
+    var size = 48;
+    var padding = 4;
     for (var x = 0; x < this.state.size[0]; x++) {
         for (var y = 0; y < this.state.size[1]; y++) {
             var ball = this.state.get(x, y);
             if (ball) {
                 console.log(ball);
-                ball.draw(game.ctx, x, y, sizeX);
+                ball.draw(
+                    game.ctx,
+                    x*(size+padding) + i*530 + 30,
+                    y*(size+padding) + 30,
+                    size
+                );
             }
         }
     }

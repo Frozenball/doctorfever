@@ -46,8 +46,8 @@ Puyo.prototype.draw = function(ctx, x, y, size) {
     }
     ctx.drawImage(
         Assets[this.type.assetName],
-        size * x,
-        size * y,
+        x,
+        y,
         size,
         size
     );
