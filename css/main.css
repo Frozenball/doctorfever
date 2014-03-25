@@ -9,7 +9,7 @@ body {
     background: url(../img/bg-blurred.jpg) no-repeat center center fixed;
     background-size: cover;
 
-    padding-top: 120px;
+    padding-top: 100px;
 }
 
 h1 {
@@ -20,6 +20,6 @@ h1 {
 }
 
 .centerized {
-    width: 800px;
+    width: 928px;
     margin: 0px auto;
 }
