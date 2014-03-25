@@ -10,8 +10,6 @@ function FieldState(size) {
     }
 }
 
-
-
 /*
  * Field Constructor
  * @param size [width, height] size of the puyo field(in tiles)
@@ -19,4 +17,6 @@ function FieldState(size) {
 function Field(size) {
     this.state = new FieldState(size);
 }
-
+Field.prototype.drawBoard = function(ctx, i) {
+    // lol
+};

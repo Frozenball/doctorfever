@@ -7,7 +7,7 @@ module.exports = function(grunt) {
         separator: ';'
       },
       dist: {
-        src: ['js/vendor/jquery-1.9.1.min.js', 'js/doctorfever/states/*.js', 'js/**/*.js'],
+        src: ['js/vendor/jquery-1.9.1.min.js', 'js/doctorfever/config.js', 'js/doctorfever/states/*.js', 'js/**/*.js'],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
     },
     watch: {
       files: ['<%= jshint.files %>'],
-      tasks: ['jshint', 'concat', 'uglify']
+      tasks: ['jshint', 'concat']
     }
   });
  
