@@ -1,41 +1,26 @@
 /*
- * Constructor for Color
- * @param name name for the color
- * @param css CSS color
- */
-function PuyoColor(name, css) {
-    this.name = name || "Puyo";
-    this.css = css || "888888";
-}
-
-/*
- * Default puyo type definitions
- */
-puyo_colors = {};
-puyo_colors[0] = new PuyoColor("Red", "#FF0000");
-puyo_colors[1] = new PuyoColor("Green", "#00FF00");
-puyo_colors[2] = new PuyoColor("Blue", "#0000FF");
-puyo_colors[3] = new PuyoColor("Yellow", "#FFFF00");
-puyo_colors[4] = new PuyoColor("Cyan", "#00FFFF");
-puyo_colors[5] = new PuyoColor("Magenta", "#FF00FF");
-
-
-
-/*
  * Constructof for PuyoType
  * @param name name for the puyo type
  */
-function PuyoType(name) {
-    this.name = name;
+function ColoredPuyoType(name) {
+    this.assetName = name;
+}
+function TrashPuyoType() {
+    this.assetName = 'trash';
 }
 
 /*
  * Default puyo type definitions
  */
-puyo_types = {};
-puyo_types[0] = new PuyoType("Normal");
-puyo_types[1] = new PuyoType("Trash");
+puyoColors = [];
+puyoColors.push(new ColoredPuyoType('red'));
+puyoColors.push(new ColoredPuyoType('green'));
+puyoColors.push(new ColoredPuyoType('blue'));
+puyoColors.push(new ColoredPuyoType('yellow'));
+puyoColors.push(new ColoredPuyoType('purple'));
 
+puyoTypes = {};
+puyoTypes.nuisance = new TrashPuyoType();
 
 
 /*
@@ -45,10 +30,26 @@ puyo_types[1] = new PuyoType("Trash");
  * @param position [x, y], position on the field, unit = tiles;
  * @param velocity [x, y], velocity, unit = tile;
  */
-function Puyo(color, type, position, velocity) {
-    this.position = position || [0, 0];        // [x, y], position on the field, unit=tiles.
-    this.type = type || puyo_types[0];    // one of puyo types defined in data/puyo.js
-    this.color = color || puyo_colors[0];        // one of colors defined in data/puyo.js
-    this.velocity = velocity || [0, 0];        // [x, y], velocity/speed, unit=tiles/s
+function Puyo(type, position, velocity) {
+    // [x, y], position on the field, unit=tiles.
+    this.position = position || [0, 0];
+
+    // one of puyo types defined in data/puyo.js
+    this.type = type || puyoColors[0];
+
+    // [x, y], velocity/speed, unit=tiles/s
+    this.velocity = velocity || [0, 0];
 }
+Puyo.prototype.draw = function(ctx, x, y, size) {
+    if (Assets[this.type.assetName] === undefined) {
+        throw new Error('Missing asset: '+this.type.assetName);
+    }
+    ctx.drawImage(
+        Assets[this.type.assetName],
+        size * x,
+        size * y,
+        size,
+        size
+    );
+};
 

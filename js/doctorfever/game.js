@@ -15,7 +15,8 @@ function Game(canvas) {
     this.fields.push(new Field([10, 20]));
     
     //TEMPORARY TEST CODE
-    this.fields[0].state.set(2, 2, new Puyo(puyo_colors[0], puyo_types[0]));
+    this.fields[0].state.debugRandomize();
+    //this.fields[0].state.set(2, 2, new Puyo(puyoColors[0]));
     /*this.fields[0].state.puyos[3][2] = new Puyo(puyo_colors[1], puyo_types[0]);
     this.fields[0].state.puyos[4][2] = new Puyo(puyo_colors[2], puyo_types[0]);
     this.fields[0].state.puyos[5][3] = new Puyo(puyo_colors[3], puyo_types[0]);

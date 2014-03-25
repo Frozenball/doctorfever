@@ -18,6 +18,16 @@ FieldState.prototype.get = function(x, y) {
     }
     return this.puyos[x + y*this.size[1]];
 };
+FieldState.prototype.debugRandomize = function(){
+    for (var x = 0; x < this.size[0]; x++) {
+        for (var y = 0; y < this.size[1]; y++) {
+            if (randint(0, 10) <= 5) {
+                this.set(x, y, new Puyo(puyoColors[randint(0,3)]));
+            }
+        }
+    }
+    
+};
 
 /*
  * Field Constructor
@@ -37,13 +47,8 @@ Field.prototype.drawBoard = function(game, i) {
         for (var y = 0; y < this.state.size[1]; y++) {
             var ball = this.state.get(x, y);
             if (ball) {
-                game.ctx.drawImage(
-                    Assets.blue,
-                    sizeX * x,
-                    sizeX * y,
-                    sizeX,
-                    sizeY
-                );
+                console.log(ball);
+                ball.draw(game.ctx, x, y, sizeX);
             }
         }
     }
