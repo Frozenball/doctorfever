@@ -9,7 +9,6 @@ function StateManager() {
     requestFrame();
 }
 StateManager.prototype.updateGraphics = function() {
-    console.log('State is', this.state);
     if (this.state === undefined) {
         throw new Error("State is undefined.");
     }
