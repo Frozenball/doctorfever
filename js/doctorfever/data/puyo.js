@@ -1,26 +1,37 @@
 /*
+ * 
  * Constructof for PuyoType
  * @param name name for the puyo type
  */
-function ColoredPuyoType(name) {
+
+
+function PuyoType(name) {
     this.assetName = name;
 }
+function ColoredPuyoType(color_name) {
+    return new PuyoType(color_name);
+}
 function TrashPuyoType() {
-    this.assetName = 'trash';
+    return new PuyoType('trash');
 }
 
 /*
  * Default puyo type definitions
  */
-puyoColors = [];
-puyoColors.push(new ColoredPuyoType('red'));
-puyoColors.push(new ColoredPuyoType('green'));
-puyoColors.push(new ColoredPuyoType('blue'));
-puyoColors.push(new ColoredPuyoType('yellow'));
-puyoColors.push(new ColoredPuyoType('purple'));
+coloredPuyos = [];
+coloredPuyos.push(new ColoredPuyoType('red'));
+coloredPuyos.push(new ColoredPuyoType('green'));
+coloredPuyos.push(new ColoredPuyoType('blue'));
+coloredPuyos.push(new ColoredPuyoType('yellow'));
+coloredPuyos.push(new ColoredPuyoType('purple'));
 
 puyoTypes = {};
-puyoTypes.nuisance = new TrashPuyoType();
+puyoTypes.red       = coloredPuyos[0];
+puyoTypes.green     = coloredPuyos[1];
+puyoTypes.blue      = coloredPuyos[2];
+puyoTypes.yellow    = coloredPuyos[3];
+puyoTypes.purple    = coloredPuyos[4];
+puyoTypes.nuisance  = new TrashPuyoType();
 
 
 /*
@@ -40,16 +51,27 @@ function Puyo(type, position, velocity) {
     // [x, y], velocity/speed, unit=tiles/s
     this.velocity = velocity || [0, 0];
 }
+/*
+ * Draw puyo on given canvas context
+ * @param ctx canvas context
+ * @param x x position, position defaults to puyo location*size
+ * @param y y position, position defaults to puyo location*size
+ * @param size [x, y], puyo size, defaults to asset size
+ */
 Puyo.prototype.draw = function(ctx, x, y, size) {
     if (Assets[this.type.assetName] === undefined) {
         throw new Error('Missing asset: '+this.type.assetName);
     }
+    var asset = Assets[this.type.assetName];
+    size = typeof(size[0]) === 'number' ? size : [asset.clientWidth, asset.clientHeight];
+    x = typeof(x) === 'number' ? x : Math.floor(position[0]) * size[0];
+    y = typeof(y) === 'number' ? y : Math.floor(position[1]) * size[1];
     ctx.drawImage(
-        Assets[this.type.assetName],
+        asset,
         x,
         y,
-        size,
-        size
+        size[0],
+        size[1]
     );
 };
 

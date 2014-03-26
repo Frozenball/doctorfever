@@ -8,6 +8,7 @@ function Game(canvas) {
     if (!canvas) {
         throw new Error('Canvas was not specified.');
     }
+    var date = new Date();
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.fields = [];
@@ -17,6 +18,8 @@ function Game(canvas) {
     //TEMPORARY TEST CODE
     this.fields[0].state.debugRandomize();
     this.fields[1].state.debugRandomize();
+    this.fields[0].state.time = date.getTime();
+    this.fields[1].state.time = date.getTime();
     //this.fields[0].state.set(2, 2, new Puyo(puyoColors[0]));
     /*this.fields[0].state.puyos[3][2] = new Puyo(puyo_colors[1], puyo_types[0]);
     this.fields[0].state.puyos[4][2] = new Puyo(puyo_colors[2], puyo_types[0]);
@@ -26,6 +29,16 @@ function Game(canvas) {
     this.fields[1].state.puyos[4][2] = new Puyo(puyo_colors[2], puyo_types[0]);
     this.fields[1].state.puyos[5][3] = new Puyo(puyo_colors[3], puyo_types[0]);
     */
+    var action_update_field_1 = new ActionUpdateFieldState(
+            game,
+            this.fields[0].state,
+            date.getTime() + 200);
+    var action_update_field_2 = new ActionUpdateFieldState(
+            game,
+            this.fields[1].state,
+            date.getTime() + 200);
+    window.setTimeout(action_update_field_1.process, 200);
+    window.setTimeout(action_update_field_2.process, 200);
     console.log("Hello World :-)");
 }
 
