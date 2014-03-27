@@ -3,6 +3,9 @@ function Action() {
     this.process = function(){};
 }
 
+
+
+
 /*
  * Update the given field state, this involves updating position of puyos on
  * the field, checking for collisions etc. and generating new actions
@@ -58,13 +61,18 @@ function ActionUpdateFieldState(game, field_state, current_time) {
                     {
                         collided_y = true;
                     }
-                    if (!(collided_x || collided_y) &&
+                    if (!collided_x &&
                         field_state.getPuyoAt( new_tile_position[0],
-                                               new_tile_position[1]))
+                                               tile_position[1]))
                     {
                         if(new_tile_position[0] != tile_position[0]) {
                             collided_x = true;
                         }
+                    }
+                    if (!collided_y &&
+                        field_state.getPuyoAt( tile_position[0],
+                                               new_tile_position[1]))
+                    {
                         if(new_tile_position[1] != tile_position[1]) {
                             collided_y = true;
                         }
