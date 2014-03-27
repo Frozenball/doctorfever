@@ -29,16 +29,16 @@ function Game(canvas) {
     this.fields[1].state.puyos[4][2] = new Puyo(puyo_colors[2], puyo_types[0]);
     this.fields[1].state.puyos[5][3] = new Puyo(puyo_colors[3], puyo_types[0]);
     */
-    var action_update_field_1 = new ActionUpdateFieldState(
+    var actionUpdateField1 = new ActionUpdateFieldState(
             game,
-            this.fields[0].state,
+            this.fields[0],
             date.getTime() + 200);
-    var action_update_field_2 = new ActionUpdateFieldState(
+    var actionUpdateField2 = new ActionUpdateFieldState(
             game,
-            this.fields[1].state,
+            this.fields[1],
             date.getTime() + 200);
-    window.setTimeout(action_update_field_1.process, 200);
-    window.setTimeout(action_update_field_2.process, 200);
+    window.setTimeout(actionUpdateField1.process, 200);
+    window.setTimeout(actionUpdateField2.process, 200);
     console.log("Hello World :-)");
 }
 
