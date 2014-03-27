@@ -180,7 +180,6 @@ Field.prototype.drawBoard = function(game, i) {
         for (var y = 0; y < this.state.size[1]; y++) {
             var puyo = this.state.getPuyoAt(x, y);
             if (puyo) {
-                //console.log(ball);
                 var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] + i * boardPadding[2],
                                     boardPadding[1]];
                 puyo.draw(

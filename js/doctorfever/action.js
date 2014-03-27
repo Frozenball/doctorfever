@@ -30,8 +30,6 @@ function ActionUpdateFieldState(game, field, currentTime) {
         // IN FUTURE THIS BEHAVIOUR SHOULD BE REPLACED WITH SOMETHING THAT
         // ALLOWS YOU TO CONTINUE PLAYING... LIKE CHECK IF PUYOS SHOULD BE
         // DESTRUCTED OR A NEW BLOCk SHOULD BE SPAWNED
-        console.log(nextUpdate);
-        console.log((new Date()).getTime());
         if(nextUpdate == Infinity) { return; }
         // Generate new action for next field update
         var nextUpdateAction = new ActionUpdateFieldState( game, field,
