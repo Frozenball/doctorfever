@@ -3,7 +3,7 @@
  * @param size [width, height] size of the puyo field(in tiles)
  */
 function FieldState(size) {
-    this.size = size || [6, 12];
+    this.size = size || [CONFIG.boardWidthTiles, CONFIG.boardHeightTiles];
     this.puyos = new Array(this.size[0] * this.size[1]);
 }
 
@@ -11,7 +11,7 @@ FieldState.prototype.setPuyoAt = function(x, y, val) {
     if (x < 0 || x >= this.size[0] || y < 0 || y >= this.size[1]) {
         throw new Error('Out of bounds error');
     }
-    this.puyos[x + y*this.size[1]] = val;
+    this.puyos[x + y * this.size[1]] = val;
 };
 
 FieldState.prototype.getPuyoAt = function(x, y) {
@@ -45,19 +45,27 @@ function Field(size) {
     this.state = new FieldState(size);
 }
 
-Field.prototype.drawBoard = function(game, i) {
+var b = false;
+
+Field.prototype.drawBoard = function(canvas, i) {
     for (var x = 0; x < this.state.size[0]; x++) {
-	var puyoSize = CONFIG.puyoSize;
-	var puyoPadding = CONFIG.puyoPadding;
-	var boardSize = CONFIG.boardSize;
-        var boardPadding = CONFIG.boardPadding;
+	var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
+	var puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
+	var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
+        var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
+                             CONFIG.boardPaddingRight, CONFIG.boardPaddingTop ];
+        if(!b)
+        {
+            console.log([puyoSize, puyoPadding, boardSize, boardPadding]);
+            b = true;
+        }
         for (var y = 0; y < this.state.size[1]; y++) {
             var puyo = this.state.getPuyoAt(x, y);
             if (puyo) {
                 var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] + i * boardPadding[2],
                                     boardPadding[1]];
                 puyo.draw(
-                    game.ctx,
+                    canvas.ctx,
                     x * (puyoSize[0] + puyoPadding[0]) + boardOffset[0],
                     y * (puyoSize[1] + puyoPadding[1]) + boardOffset[1],
                     puyoSize
@@ -67,7 +75,7 @@ Field.prototype.drawBoard = function(game, i) {
     }
 };
 
-Field.prototype.updatePuyoPositions = function(game, currentTime) {
+Field.prototype.updatePuyoPositions = function(currentTime) {
     var fieldState = this.state;
     
     // Time delta between current and old state time in seconds
@@ -158,7 +166,7 @@ Field.prototype.updatePuyoPositions = function(game, currentTime) {
  * words the time puyo grid should be updated by calling
  * Field.updatePuyoPositions().
  */
-Field.prototype.getNextUpdateTime = function(game) {
+Field.prototype.getNextUpdateTime = function() {
     var fieldState = this.state;
     
     // Time to next update - will be calculatet later and the time passed
@@ -193,7 +201,12 @@ Field.prototype.getNextUpdateTime = function(game) {
     return this.state.time + nextUpdate * 1000;
 };
 
-Field.prototype.getAdjacentPuyoSets = function(game) {
+
+// Get adjacent puyos of same type.
+// Returns an array. each cell of returned array is an array containing puyos
+// of same type that are adjacent on the puyo field. Each puyo on the field
+// belongs to exactly one of these arrays.
+Field.prototype.getAdjacentPuyoSets = function() {
     var fieldState = this.state;
     var fieldSize = fieldState.size;
     // Store found puyo sets as arrays of puyos
@@ -272,17 +285,11 @@ Field.prototype.getAdjacentPuyoSets = function(game) {
             }
         }
     }
-
-    var puyoSets2 = [];
-    for(i = 0; i < puyoSets.length; i++){
-        if(puyoSets[i].length >= 4) {
-            puyoSets2.push(puyoSets[i]);
-        }
-    }
-    return puyoSets2;
+    
+    return puyoSets;
 };
 
-Field.prototype.popPuyoSets = function(game, puyoSets) {
+Field.prototype.popPuyoSets = function(puyoSets) {
     var fieldState = this.state;
     for(var i = 0; i < puyoSets.length; i++) {
         for(var j = 0; j < puyoSets[i].length; j++) {
@@ -290,6 +297,22 @@ Field.prototype.popPuyoSets = function(game, puyoSets) {
             var x = Math.floor(puyo.position[0]);
             var y = Math.floor(puyo.position[1]);
             fieldState.setPuyoAt(x, y, undefined);
+        }
+    }
+};
+
+Field.prototype.dropPuyos = function() {
+    var fieldState = this.state;
+    var fieldSize = fieldState.size;
+    for(var x = 0; x < fieldSize[0]; x++) {
+        for(var y = fieldSize[1] - 1; y > 0; y--) {
+            if(!fieldState.getPuyoAt(x, y)) {
+                for(var yy = y - 1; yy >= 0; yy--) {
+                    var puyo = fieldState.getPuyoAt(x, yy);
+                    if(!puyo) { continue; }
+                    puyo.velocity = [0, CONFIG.puyoDropVelocityY];
+                }
+            }
         }
     }
 };

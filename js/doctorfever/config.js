@@ -1,8 +1,17 @@
 CONFIG = window.CONFIG || {};
 CONFIG.debug = true;
-CONFIG.puyoSize = [48, 48];
-CONFIG.puyoPadding = [4, 4];
-CONFIG.boardSizeTiles = [6, 12];
-CONFIG.boardSize = [	CONFIG.boardSizeTiles[0] * (CONFIG.puyoSize[0] + CONFIG.puyoPadding[0]),
-			CONFIG.boardSizeTiles[1] * (CONFIG.puyoSize[1] + CONFIG.puyoPadding[1])];
-CONFIG.boardPadding = [30, 30, 200, 30];
+CONFIG.puyoWidth = 48;
+CONFIG.puyoHeight = 48;
+CONFIG.puyoPaddingX = 4;
+CONFIG.puyoPaddingY = 4;
+CONFIG.boardWidthTiles = 6;
+CONFIG.boardHeightTiles = 12;
+CONFIG.boardWidth = CONFIG.boardWidthTiles * (CONFIG.puyoWidth + CONFIG.puyoPaddingX);
+CONFIG.boardHeight = CONFIG.boardHeightTiles * (CONFIG.puyoHeight + CONFIG.puyoPaddingY);
+CONFIG.boardPaddingRight = 30;
+CONFIG.boardPaddingBottom = 30;
+CONFIG.boardPaddingLeft = 200;
+CONFIG.boardPaddingTop = 30;
+CONFIG.puyoPopDelay = 0.5;
+CONFIG.puyoDropDelay = 0.5;
+CONFIG.puyoDropVelocityY = 2;
