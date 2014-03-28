@@ -197,53 +197,88 @@ Field.prototype.getAdjacentPuyoSets = function(game) {
     var fieldState = this.state;
     var fieldSize = fieldState.size;
     // Store found puyo sets as arrays of puyos
-    var puyoSets = [];
-    
+    var puyoSets = []; 
     // Array that is used to store index of puyo set the puyo residing at
     // each tile belongs to.
     var setIndexes = new Array(fieldSize[0] * fieldSize[1]);
+    // convert x, y coordinates to array index
+    
+    // Helper functions
+    // Convert x, y -coordinates to array index
+    var xyToI = function(x, y) {
+        return y * fieldSize[0] + x % fieldSize[0];
+    };
+    // Recursively find puyos that belong to the set of puyo at given x, y
+    // coordinates
+    var findSet = function(fieldState, x, y) {
+
+        var puyo = fieldState.getPuyoAt(x, y);
+        if(!puyo) return;
+        
+        var puyoSetIndex = setIndexes[xyToI(x, y)];
+
+        if(puyoSetIndex === undefined) {
+            puyoSets.push([puyo]);
+            puyoSetIndex = puyoSets.length - 1;
+            setIndexes[xyToI(x, y)] = puyoSetIndex;
+        }
+        var puyoSet = puyoSets[puyoSetIndex];
+        
+        var puyoAbove =
+            y - 1 >= 0 &&
+            setIndexes[xyToI(x, y - 1)] === undefined &&
+            fieldState.getPuyoAt(x, y - 1);
+        var puyoRight =
+            x + 1 < fieldSize[0] &&
+            setIndexes[xyToI(x + 1, y)] === undefined &&
+            fieldState.getPuyoAt(x + 1, y);
+        var puyoBelow =
+            y + 1 < fieldSize[1] &&
+            setIndexes[xyToI(x, y + 1)] === undefined &&
+            fieldState.getPuyoAt(x, y + 1);
+        var puyoLeft =
+            x - 1 >= 0 &&
+            setIndexes[xyToI(x - 1, y)] === undefined &&
+            fieldState.getPuyoAt(x - 1, y);
+        
+        if (puyoAbove && puyoAbove.type == puyo.type) {
+            puyoSet.push(puyoAbove);
+            setIndexes[xyToI(x, y - 1)] = puyoSetIndex;
+            findSet(fieldState, x, y - 1);
+        }
+        if (puyoRight && puyoRight.type == puyo.type) {
+            puyoSet.push(puyoRight);
+            setIndexes[xyToI(x + 1, y)] = puyoSetIndex;
+            findSet(fieldState, x + 1, y);
+        }
+        if (puyoBelow && puyoBelow.type == puyo.type) {
+            puyoSet.push(puyoBelow);
+            setIndexes[xyToI(x, y + 1)] = puyoSetIndex;
+            findSet(fieldState, x, y + 1);
+        }
+        if (puyoLeft && puyoLeft.type == puyo.type) {
+            puyoSet.push(puyoLeft);
+            setIndexes[xyToI(x - 1, y)] = puyoSetIndex;
+            findSet(fieldState, x - 1, y);
+        }
+        
+    };
+    
     var i;
     for(var x = 0; x < fieldSize[0]; x++) {
         for(var y = 0; y < fieldSize[1]; y++) {
-            i = y * fieldSize[0] + x % fieldSize[0];
-
-            // Puyo
-            var puyo = fieldState.getPuyoAt(x, y);
-            if (!puyo) { continue; }
-            var puyoRight = x < fieldState.size[0] - 1 && fieldState.getPuyoAt(x + 1, y);
-            var puyoBelow = y < fieldState.size[1] - 1 && fieldState.getPuyoAt(x, y + 1);
-            
-            if (puyoRight && puyoRight.type == puyo.type) {
-                if (setIndexes[i + 1] === undefined) {
-                    if(setIndexes[i] === undefined)
-                    {
-                        puyoSets.push(new Array(puyo));
-                        setIndexes[i] = puyoSets.length - 1;
-                    }
-                    puyoSets[setIndexes[i]].push(puyoRight);
-                    setIndexes[i + 1] = setIndexes[i];
-                } else {
-                    puyoSets[setIndexes[i + 1]].push(puyo);
-                    setIndexes[i] = setIndexes[i + 1];
-                }
-            } else if (setIndexes[i] === undefined) {
-                puyoSets.push(new Array(puyo));
-                setIndexes[i] = puyoSets.length - 1;
-            }
-            
-            if (puyoBelow && puyoBelow.type == puyo.type) {
-                puyoSets[setIndexes[i]].push(puyoBelow);
-                setIndexes[i + fieldSize[0]] = setIndexes[i];
+            if (setIndexes[xyToI(x, y)] === undefined) {
+                findSet(this.state, x, y);
             }
         }
     }
+
     var puyoSets2 = [];
     for(i = 0; i < puyoSets.length; i++){
         if(puyoSets[i].length >= 4) {
             puyoSets2.push(puyoSets[i]);
         }
     }
-
     return puyoSets2;
 };
 
