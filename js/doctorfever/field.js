@@ -25,7 +25,7 @@ FieldState.prototype.debugRandomize = function(){
     for (var x = 0; x < this.size[0]; x++) {
         for (var y = 0; y < this.size[1]; y++) {
             if (randint(0, 10) <= 5) {
-                var puyo = new Puyo(coloredPuyos[randint(0,3)], [x, y], [0, 1] );
+                var puyo = new Puyo(coloredPuyos[randint(0,3)], [x, y], [0, 2] );
                 this.setPuyoAt(x, y, puyo);
             }
         }
@@ -44,6 +44,28 @@ function Field(size) {
     }
     this.state = new FieldState(size);
 }
+
+Field.prototype.drawBoard = function(game, i) {
+    for (var x = 0; x < this.state.size[0]; x++) {
+	var puyoSize = CONFIG.puyoSize;
+	var puyoPadding = CONFIG.puyoPadding;
+	var boardSize = CONFIG.boardSize;
+        var boardPadding = CONFIG.boardPadding;
+        for (var y = 0; y < this.state.size[1]; y++) {
+            var puyo = this.state.getPuyoAt(x, y);
+            if (puyo) {
+                var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] + i * boardPadding[2],
+                                    boardPadding[1]];
+                puyo.draw(
+                    game.ctx,
+                    x * (puyoSize[0] + puyoPadding[0]) + boardOffset[0],
+                    y * (puyoSize[1] + puyoPadding[1]) + boardOffset[1],
+                    puyoSize
+                );
+            }
+        }
+    }
+};
 
 Field.prototype.updatePuyoPositions = function(game, currentTime) {
     var fieldState = this.state;
@@ -109,7 +131,7 @@ Field.prototype.updatePuyoPositions = function(game, currentTime) {
             // If not collided horizontally, update x position. Otherwise
             // set horizontal velocity to 0 and set x position to the center
             // of current tile
-            if(!collidedVertical) {
+            if(!collidedHorizontal) {
                 puyo.position[0] = newPosition[0];
             } else {
                 puyo.velocity[0] = 0;
@@ -118,7 +140,7 @@ Field.prototype.updatePuyoPositions = function(game, currentTime) {
             // If not collided vertically, update y position. Otherwise set
             // vertical velocity to 0 and set y position to the center
             // of current tile
-            if (!collidedHorizontal) {
+            if (!collidedVertical) {
                 puyo.position[1] = newPosition[1];
             } else {
                 puyo.velocity[1] = 0;
@@ -171,24 +193,68 @@ Field.prototype.getNextUpdateTime = function(game) {
     return this.state.time + nextUpdate * 1000;
 };
 
-Field.prototype.drawBoard = function(game, i) {
-    for (var x = 0; x < this.state.size[0]; x++) {
-	var puyoSize = CONFIG.puyoSize;
-	var puyoPadding = CONFIG.puyoPadding;
-	var boardSize = CONFIG.boardSize;
-        var boardPadding = CONFIG.boardPadding;
-        for (var y = 0; y < this.state.size[1]; y++) {
-            var puyo = this.state.getPuyoAt(x, y);
-            if (puyo) {
-                var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] + i * boardPadding[2],
-                                    boardPadding[1]];
-                puyo.draw(
-                    game.ctx,
-                    x * (puyoSize[0] + puyoPadding[0]) + boardOffset[0],
-                    y * (puyoSize[1] + puyoPadding[1]) + boardOffset[1],
-                    puyoSize
-                );
+Field.prototype.getAdjacentPuyoSets = function(game) {
+    var fieldState = this.state;
+    var fieldSize = fieldState.size;
+    // Store found puyo sets as arrays of puyos
+    var puyoSets = [];
+    
+    // Array that is used to store index of puyo set the puyo residing at
+    // each tile belongs to.
+    var setIndexes = new Array(fieldSize[0] * fieldSize[1]);
+    var i;
+    for(var x = 0; x < fieldSize[0]; x++) {
+        for(var y = 0; y < fieldSize[1]; y++) {
+            i = y * fieldSize[0] + x % fieldSize[0];
+
+            // Puyo
+            var puyo = fieldState.getPuyoAt(x, y);
+            if (!puyo) { continue; }
+            var puyoRight = x < fieldState.size[0] - 1 && fieldState.getPuyoAt(x + 1, y);
+            var puyoBelow = y < fieldState.size[1] - 1 && fieldState.getPuyoAt(x, y + 1);
+            
+            if (puyoRight && puyoRight.type == puyo.type) {
+                if (setIndexes[i + 1] === undefined) {
+                    if(setIndexes[i] === undefined)
+                    {
+                        puyoSets.push(new Array(puyo));
+                        setIndexes[i] = puyoSets.length - 1;
+                    }
+                    puyoSets[setIndexes[i]].push(puyoRight);
+                    setIndexes[i + 1] = setIndexes[i];
+                } else {
+                    puyoSets[setIndexes[i + 1]].push(puyo);
+                    setIndexes[i] = setIndexes[i + 1];
+                }
+            } else if (setIndexes[i] === undefined) {
+                puyoSets.push(new Array(puyo));
+                setIndexes[i] = puyoSets.length - 1;
             }
+            
+            if (puyoBelow && puyoBelow.type == puyo.type) {
+                puyoSets[setIndexes[i]].push(puyoBelow);
+                setIndexes[i + fieldSize[0]] = setIndexes[i];
+            }
+        }
+    }
+    var puyoSets2 = [];
+    for(i = 0; i < puyoSets.length; i++){
+        if(puyoSets[i].length >= 4) {
+            puyoSets2.push(puyoSets[i]);
+        }
+    }
+
+    return puyoSets2;
+};
+
+Field.prototype.popPuyoSets = function(game, puyoSets) {
+    var fieldState = this.state;
+    for(var i = 0; i < puyoSets.length; i++) {
+        for(var j = 0; j < puyoSets[i].length; j++) {
+            var puyo = puyoSets[i][j];
+            var x = Math.floor(puyo.position[0]);
+            var y = Math.floor(puyo.position[1]);
+            fieldState.setPuyoAt(x, y, undefined);
         }
     }
 };

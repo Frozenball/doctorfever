@@ -46,7 +46,7 @@ function Puyo(type, position, velocity) {
     this.position = position || [0, 0];
 
     // one of puyo types defined in data/puyo.js
-    this.type = type || puyoColors[0];
+    this.type = type || coloredPuyos[0];
 
     // [x, y], velocity/speed, unit=tiles/s
     this.velocity = velocity || [0, 0];

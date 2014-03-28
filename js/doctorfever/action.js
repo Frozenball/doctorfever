@@ -30,7 +30,11 @@ function ActionUpdateFieldState(game, field, currentTime) {
         // IN FUTURE THIS BEHAVIOUR SHOULD BE REPLACED WITH SOMETHING THAT
         // ALLOWS YOU TO CONTINUE PLAYING... LIKE CHECK IF PUYOS SHOULD BE
         // DESTRUCTED OR A NEW BLOCk SHOULD BE SPAWNED
-        if(nextUpdate == Infinity) { return; }
+        if(nextUpdate == Infinity) {
+            var puyoSets = field.getAdjacentPuyoSets(game);
+            field.popPuyoSets(game, puyoSets);
+            return;
+        }
         // Generate new action for next field update
         var nextUpdateAction = new ActionUpdateFieldState( game, field,
                 nextUpdate);
