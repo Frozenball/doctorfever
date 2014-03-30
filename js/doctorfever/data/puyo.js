@@ -49,7 +49,7 @@ function Puyo(type, position, velocity) {
     this.type = type || coloredPuyos[0];
 
     // [x, y], velocity/speed, unit=tiles/s
-    this.velocity = velocity || [0, 0];
+    this.velocity = velocity || [puyoFallVelocityX, puyoFallVelocityY];
 }
 /*
  * Draw puyo on given canvas context
@@ -73,5 +73,86 @@ Puyo.prototype.draw = function(ctx, x, y, size) {
         size[0],
         size[1]
     );
+};
+
+/* Block typed defines shape of a puyo block. A puyo block consists of puyos
+ * of 1 or 2 different colors. A block type is an array that contains a cell
+ * for each separate color in the block type. A cell in the array contains an
+ * array of puyo coordinates relative to the block center. For example, a
+ * 3-puyo block with 2 colors could be
+ * [
+ *      [ [0, -1]        ],         first color/puyo type positions
+ *      [ [0, 0], [1, 0] ]          second color/puyo type positions
+ * ]
+ */
+blockTypes = [];
+blockTypes[0] = [[[0, -1], [0, 0]]];
+blockTypes[1] = [[[0, -1], [0,0]], [[1, 0]]];
+
+
+/*
+ * PuyoBlock constructor
+ * Puyo block is the usually falling, user controllable block that consists
+ * of several (2 to 4) puyos.
+ * @param blockType One of block types - defining shape of the block - defined in puyo.js
+ */
+function PuyoBlock(blockType, position, velocity) {
+    
+    // Puyos in the block, positioin rotation of the block and the velocity of
+    // the block
+    this.puyos = [];
+    this.blockType = blockType;
+    this.position = position || [CONFIG.blockSpawnX, CONFIG.blockSpawnY];
+    this.rotation = 0; // 0, 1, 2 or 3
+    this.velocity = velocity || [CONFIG.puyoFallVelocityX, CONFIG.puyoFallVelocityY];
+    this.originalPositions = [];
+    
+    // Check the color count and array to store already used colors
+    if( blockType.length > CONFIG.puyoColorCount &&
+        blockType.length > coloredPuyos.length )
+    {
+        throw new Error("Too many colors in a block");
+    }
+    var colorsUsed = new Array(CONFIG.puyoColorCount);
+    
+    // Iterate different puyo colors in the block type
+    for(var i = 0; i < blockType.length; i++) {
+     
+        // Shuffle the color
+        var color = randint(0, CONFIG.puyoColorCount);
+        while(colorsUsed[color]) {
+            color = randint(0, CONFIG.puyoColorCount);
+        }
+        colorsUsed[color] = true;
+        
+        // Create puyos of the color
+        for(var j = 0; j < blockType[i].length; j++) {
+            var pos = blockType[i][j];
+            this.puyos.push( new Puyo(coloredPuyos[color],
+                             [ this.position[0] + pos[0],
+                               this.position[1] + pos[1] ],
+                             [this.velocity[0], this.velocity[1]]) );
+            this.originalPositions.push([ this.position[0] + pos[0],
+                                          this.position[1] + pos[1] ]);
+        }
+    }
+}
+
+/*
+ * Return an array of puyo positions with given rotation(0, 1, 2 or 3). The
+ * returned coordinates are in order of puyos in puyoBlock.puyos array.
+ * @param rotation rotation (0, 1, 2 or 3)
+ */
+PuyoBlock.prototype.getRotatedPuyoPositions = function(rotation) {
+    var rotatedPositions = [];
+    for(var i = 0; i < this.puyos.length; i++) {
+        var x0 = this.originalPositions[i][0];
+        var y0 = this.originalPositions[i][1];
+        var a = Math.PI / 2 * this.rotation;
+        var x = Math.cos(a) * x0 - Math.sin(a) * y0;
+        var y = Math.sin(a) * x0 + Math.cos(a) * y0;
+        rotatedPositions.push([x, y]);
+    }
+    return rotatedPositions;
 };
 

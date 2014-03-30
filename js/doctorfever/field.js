@@ -4,6 +4,7 @@
  */
 function FieldState(size) {
     this.size = size || [CONFIG.boardWidthTiles, CONFIG.boardHeightTiles];
+    this.block = undefined;
     this.puyos = new Array(this.size[0] * this.size[1]);
 }
 
@@ -20,6 +21,24 @@ FieldState.prototype.getPuyoAt = function(x, y) {
     }
     return this.puyos[x + y*this.size[1]];
 };
+
+/*
+ * Add PuyoBlock to the field state
+ * @param puyoBlock a PuyoBlock
+ */
+FieldState.prototype.setBlock = function(puyoBlock) {
+    var puyos = puyoBlock.puyos;
+    var puyoPositions = puyoBlock.getRotatedPuyoPositions();
+    this.block = puyoBlock;
+    for(var i = 0; i < puyos.length; i++) {
+        var puyo = puyos[i];
+        var pos = puyoPositions[i];
+        puyo.position = [pos[0], pos[1]];
+        this.setPuyoAt(Math.floor(pos[0]), Math.floor(pos[1]), puyos[i]);
+    }
+};
+
+
 
 FieldState.prototype.debugRandomize = function(){
     for (var x = 0; x < this.size[0]; x++) {
@@ -45,24 +64,19 @@ function Field(size) {
     this.state = new FieldState(size);
 }
 
-var b = false;
-
 Field.prototype.drawBoard = function(canvas, i) {
     for (var x = 0; x < this.state.size[0]; x++) {
 	var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
 	var puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
 	var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
         var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
-                             CONFIG.boardPaddingRight, CONFIG.boardPaddingTop ];
-        if(!b)
-        {
-            console.log([puyoSize, puyoPadding, boardSize, boardPadding]);
-            b = true;
-        }
+                             CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
         for (var y = 0; y < this.state.size[1]; y++) {
             var puyo = this.state.getPuyoAt(x, y);
             if (puyo) {
-                var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] + i * boardPadding[2],
+                var boardOffset = [ (i + 1) * boardPadding[0] +
+                                    i * boardSize[0] +
+                                    i * boardPadding[2],
                                     boardPadding[1]];
                 puyo.draw(
                     canvas.ctx,
@@ -73,6 +87,60 @@ Field.prototype.drawBoard = function(canvas, i) {
             }
         }
     }
+};
+
+Field.prototype.rotateBlock = function(rotation) {
+    var fieldState = this.state;
+    var puyoBlock = fieldState.block;
+    var newPuyoPositions = block.getRotatedPuyoPositions(rotation);
+    var i;
+    var puyo;
+    var newPosition;
+    var newTiledPosition;
+
+    //Check if rotateabla(does not collide with other puyos/border)
+    for(i = 0; i < newPuyoPositions; i++) {
+        newPosition = newPuyoPositions[i];
+        newTiledPosition = [ Math.floor(newPosition[0]),
+                             Math.floor(newPosition[1]) ];
+        puyo = newTiledPosition[0] >= 0 &&
+               newTiledPosition[0] < fieldState.size[0] &&
+               newTiledPosition[1] >= 0 &&
+               newTiledPosition[1] < fieldState.size[0] &&
+               fieldState.getPuyoAt(newTiledPosition[0], newTiledPosition[1]);
+        if(puyo && !(puyo in puyoBlock.puyos)) {
+            return;
+        }
+    }
+
+    // Rotate and update puyo field
+    puyoBlock.rotation = rotation;
+    for(i = 0; i < puyoBlock.puyos.length; i++) {
+        puyo = puyoBlock.puyos[i];
+        var puyoPosition = puyo.position;
+        var tiledPuyoPosition = [ Math.floor(puyoPosition[0]),
+                                  Math.floor(puyoPosition[1]) ];
+        newTiledPosition = [ Math.floor(newPosition[0]),
+                                 Math.floor(newPosition[1]) ];
+        fieldState.setPuyoAt( tiledPuyoPosition[0],
+                              tiledPuyoPosition,
+                              undefined );
+        fieldState.setPuyoAt( tiledNewPosition[0],
+                              tiledNewPosition[1],
+                              puyo );
+    }
+};
+
+Field.prototype.turnBlockRight = function() {
+    var fieldState = this.state;
+    var puyoBlock = fieldState.block;
+    this.rotateBlock(puyoBlock.rotation + 1);
+};
+
+Field.prototype.turnBlockLeft = function() {
+    var fieldState = this.state;
+    var puyoBlock = fieldState.block;
+    this.rotateBlock(puyoBlock.rotation - 1);
 };
 
 Field.prototype.updatePuyoPositions = function(currentTime) {
@@ -301,6 +369,9 @@ Field.prototype.popPuyoSets = function(puyoSets) {
     }
 };
 
+/*
+ * set falling puyos velocities to drop velocity
+ */
 Field.prototype.dropPuyos = function() {
     var fieldState = this.state;
     var fieldSize = fieldState.size;
@@ -316,3 +387,4 @@ Field.prototype.dropPuyos = function() {
         }
     }
 };
+

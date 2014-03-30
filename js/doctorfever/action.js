@@ -1,11 +1,37 @@
 
-function Action() {
+function Action(currentTime) {
+    this.time = currentTime;
     this.process = function(){};
 }
 
+function ActionCreateNewBlock(game, field, currentTime) {
+    var action = new Action(currentTime);
+    action.process = function() {
+        var blockType = blockTypes[randint(0, blockTypes.length - 1)];
+        var puyoBlock = new PuyoBlock(blockType);
+        field.state.setBlock(puyoBlock);
+    };
+    return action;
+}
+
+function ActionTurnBlockRight(game, field, currentTime) {
+    var action = new Action();
+    action.process = function() {
+        field.turnBlockRight();
+    };
+    return action;
+}
+
+function ActionTurnBlockLeft(game, field, currentTime) {
+    var action = new Action();
+    action.process = function() {
+        field.turnBlockLeft();
+    };
+    return action;
+}
 
 function ActionDropPuyos(game, field, currentTime) {
-    var action = new Action();
+    var action = new Action(currentTime);
     action.process = function() {
         // Set puyos to drop
         field.dropPuyos();
@@ -23,7 +49,7 @@ function ActionDropPuyos(game, field, currentTime) {
 }
 
 function ActionPopPuyos(game, field, currentTime) {
-    var action = new Action();
+    var action = new Action(currentTime);
     action.process = function() {
             var puyoSets = field.getAdjacentPuyoSets();
             var puyoSetsToPop = [];
@@ -54,7 +80,7 @@ function ActionPopPuyos(game, field, currentTime) {
  * @param currentTime the time the field state will be updated to
 */
 function ActionUpdateFieldState(game, field, currentTime) {
-    var action = new Action();
+    var action = new Action(currentTime);
     action.process = function() {
         
         // Update puyo positions on given fieldState
