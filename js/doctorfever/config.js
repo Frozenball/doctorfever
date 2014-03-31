@@ -14,12 +14,18 @@ CONFIG.boardPaddingBottom = 30;
 CONFIG.boardPaddingLeft = 200;
 CONFIG.boardPaddingTop = 30;
 
+CONFIG.puyoFallVelocityX = 0;
+CONFIG.puyoFallVelocityY = 3;
+CONFIG.puyoDropVelocityX = 0;
+CONFIG.puyoDropVelocityY = 3;
+CONFIG.blockSpawnX = 2.5;
+CONFIG.blockSpawnY = 2.5;
+
+CONFIG.puyoColorCount = 5;
 CONFIG.puyoPopDelay = 0.5;
 CONFIG.puyoDropDelay = 0.5;
-CONFIG.puyoFallVelocityX = 0;
-CONFIG.puyoFallVelocityY = 2;
-CONFIG.puyoFallVelocityX = 0;
-CONFIG.puyoDropVelocityY = 2;
-CONFIG.puyoColorCount = 5;
-CONFIG.blockSpawnX = 2;
-CONFIG.blockSpawnY = 2;
+CONFIG.blockCreateDelay = 0.5;
+
+// An insignificantly small amount of time that can be added to time values
+// to compensate for inaccuracies in various calculations.
+CONFIG.planckTime = 0.001;

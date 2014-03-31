@@ -2,10 +2,11 @@
  * State Constructor
  * @param size [width, height] size of the puyo field(in tiles)
  */
-function FieldState(size) {
+function FieldState(size, stateTime) {
     this.size = size || [CONFIG.boardWidthTiles, CONFIG.boardHeightTiles];
     this.block = undefined;
     this.puyos = new Array(this.size[0] * this.size[1]);
+    this.time = stateTime || (new Date()).getTime();
 }
 
 FieldState.prototype.setPuyoAt = function(x, y, val) {
@@ -38,8 +39,9 @@ FieldState.prototype.setBlock = function(puyoBlock) {
     }
 };
 
-
-
+/*
+ * Add some random puyos to the field
+ */
 FieldState.prototype.debugRandomize = function(){
     for (var x = 0; x < this.size[0]; x++) {
         for (var y = 0; y < this.size[1]; y++) {
@@ -97,8 +99,7 @@ Field.prototype.rotateBlock = function(rotation) {
     var puyo;
     var newPosition;
     var newTiledPosition;
-
-    //Check if rotateabla(does not collide with other puyos/border)
+    // Check if rotateabla(does not collide with other puyos/border)
     for(i = 0; i < newPuyoPositions; i++) {
         newPosition = newPuyoPositions[i];
         newTiledPosition = [ Math.floor(newPosition[0]),
@@ -232,7 +233,8 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
 /*
  * Simply returns the next time a puyo crosses the border of 2 tiles. In other
  * words the time puyo grid should be updated by calling
- * Field.updatePuyoPositions().
+ * Field.updatePuyoPositions(). The result is off by +planckTime to make sure
+ * the update time comes after and not before the accurate value.
  */
 Field.prototype.getNextUpdateTime = function() {
     var fieldState = this.state;
@@ -258,7 +260,6 @@ Field.prototype.getNextUpdateTime = function() {
             // Next column and row to enter with the puyo's current velocity
             var nextCoords = [ Math.floor(puyo.position[0] + direction[0]),
                                Math.floor(puyo.position[1] + direction[1])];
-            
             // update nextUpdate, if the time befor this puyo enters a new
             // tile is shorther than it.
             nextUpdate = Math.min( nextUpdate,
@@ -266,7 +267,7 @@ Field.prototype.getNextUpdateTime = function() {
                     (nextCoords[1] - puyo.position[1]) / puyo.velocity[1]);
         }
     }
-    return this.state.time + nextUpdate * 1000;
+    return this.state.time + (nextUpdate + CONFIG.planckTime) * 1000;
 };
 
 
