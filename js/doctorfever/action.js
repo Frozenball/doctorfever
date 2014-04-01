@@ -131,20 +131,29 @@ function ActionPopPuyos(game, field, currentTime) {
         DEBUG_PRINT("ActionPopPuyos...");
         var puyoSets = field.getAdjacentPuyoSets();
         var puyoSetsToPop = [];
-        for(var i = 0; i < puyoSets.length; i++) {
+        var i;
+        for(i = 0; i < puyoSets.length; i++) {
             if(puyoSets[i].length >= 4) {
                 puyoSetsToPop.push(puyoSets[i]);
             }
         }
+        var chains = field.chains;
+        var chain = chains[chains.length - 1];
         if(puyoSetsToPop.length > 0) {
-            DEBUG_PRINT("Popping " + puyoSetsToPop.length + "Puyos");
+            DEBUG_PRINT("Popping " + puyoSetsToPop.length + "puyo sets");
             field.popPuyoSets(puyoSetsToPop);
+            for(i = 0; i < puyoSetsToPop.length; i++) {
+                chain.addSets(puyoSetsToPop);
+            }
             DEBUG_PRINT("Schedule puyo drop");
             var puyoDropTime = currentTime + CONFIG.puyoDropDelay * 1000;
             var actionDropPuyos = new ActionDropPuyos(game, field,
                     puyoDropTime);
             field.addAction(actionDropPuyos);
         } else {
+            if(!chain || chain.sets.length > 0) {
+                chains.push(new Chain());
+            }
             DEBUG_PRINT("Schedule block creation");
             var blockCreateTime = currentTime + CONFIG.blockCreateDelay * 1000;
             var actionCreateNewBlock = ActionCreateNewBlock(game, field,

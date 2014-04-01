@@ -51,6 +51,9 @@ Game.prototype.updateGraphics = function() {
     this.fields.forEach(function(field, i){
         field.drawBoard(me, i);
     });
+    this.fields.forEach(function(field, i){
+        field.drawChainText(me, i);
+    });
 };
 
 Game.prototype.initKeys = function() {

@@ -68,6 +68,7 @@ function Field(game, size) {
     this.currentActionIndex = 0;
     this.nextUpdate = undefined;
     this.nextUpdateTimeout = undefined;
+    this.chains = [new Chain()];
     var nextUpdateTime = this.getNextUpdateTime();
     if(nextUpdateTime < Infinity) {
         this.nextUpdate = new ActionUpdateFieldState(game, this, nextUpdateTime);
@@ -76,6 +77,10 @@ function Field(game, size) {
     }
 }
 
+/*
+ * Draw puyos on the field to the given canvas. i defines the index and
+ * positioning of the field.
+ */
 Field.prototype.drawBoard = function(canvas, i) {
     for (var x = 0; x < this.state.size[0]; x++) {
         var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
@@ -83,13 +88,13 @@ Field.prototype.drawBoard = function(canvas, i) {
         var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
         var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
                              CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
+        var boardOffset = [ (i + 1) * boardPadding[0] +
+                            i * boardSize[0] +
+                            i * boardPadding[2],
+                            boardPadding[1]];
         for (var y = 0; y < this.state.size[1]; y++) {
             var puyo = this.state.getPuyoAt(x, y);
             if (puyo) {
-                var boardOffset = [ (i + 1) * boardPadding[0] +
-                                    i * boardSize[0] +
-                                    i * boardPadding[2],
-                                    boardPadding[1]];
                 puyo.draw(
                     canvas.ctx,
                     x * (puyoSize[0] + puyoPadding[0]) + boardOffset[0],
@@ -99,6 +104,76 @@ Field.prototype.drawBoard = function(canvas, i) {
             }
         }
     }
+};
+
+/*
+ * Draw current chain text to the given canvas. i defines the index and
+ * positioning of the field
+ */
+Field.prototype.drawChainText = function(canvas, i) {
+    if(!this.chains) { return; }
+    var chain = this.chains[this.chains.length - 1];
+    if(chain.sets.length <= 0) { return; }
+    
+    // Fetch some important values
+    var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
+    var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
+                         CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
+    var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] +
+        i * boardPadding[2], boardPadding[1]];
+    var boardCenter = [ boardOffset[0] + boardSize[0] / 2,
+                        boardOffset[1] + boardSize[1] / 2 ]; 
+    
+    var ctx = canvas.ctx;
+    
+    var counter = chain.sets.length;
+    var score = chain.score;
+   
+    // Cool animation stuff...
+    /* This would increase the score meter gradually 2 seconds from the
+     * score change... not working for some reason though -
+     * fieldData.score gets assigned NaN
+    if(canvas.fields === undefined) { canvas.fields = {}; }
+    if(canvas.fields[i] === undefined) {
+        canvas.fields[i] = {};
+        canvas.fields[i].score = 0;
+        canvas.fields[i].counter = 0;
+        canvas.fields[i].lastScore = 0;
+        canvas.fields[i].scoreAnimBegin = 0;
+    }
+    var fieldData = canvas.fields[i];
+    if(fieldData.counter < counter) {
+        fieldData.scoreAnimBegin = (new Date()).getTime();
+        fieldData.lastScore = fieldData.score;
+        fieldData.counter = counter;
+    }
+    if(fieldData.counter > counter) {
+        fieldData.counter = 0;
+    }
+    var f = ((new Date()).getTime() - fieldData.scoreAnimBegin) / 2000;
+    f = Math.min(f, 1);
+
+    fieldData.score = fieldData.lastScore + f * (score - fieldData.lastScore);
+    fieldData.score = Math.floor(fieldData.score);
+    */
+
+    // Draw the chain&score texts
+
+    var counterText = "Chain: " + counter;
+    var scoreText = "Score: " + score; 
+
+    ctx.font = "48px Iceland";
+    ctx.fillStyle = "#FF00FF";
+    var counterDim = stringDimensions(counterText, ctx.font);
+    var counterPos = [ boardCenter[0] - counterDim[0] / 2,
+                       boardCenter[1] - counterDim[1] ];
+    ctx.fillText(counterText, counterPos[0], counterPos[1]);
+    ctx.fillStyle = "#00FFFF";
+    ctx.font = "32px Iceland";
+    var scoreDim = stringDimensions(scoreText, ctx.font);
+    var scorePos = [ boardCenter[0] - scoreDim[0] / 2,
+                     boardCenter[1] ];
+    ctx.fillText(scoreText, scorePos[0], scorePos[1]);
 };
 
 /*
