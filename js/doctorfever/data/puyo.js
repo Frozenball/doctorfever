@@ -138,20 +138,33 @@ function PuyoBlock(blockType, position, velocity) {
 }
 
 /*
- * Return an array of puyo positions with given rotation(0, 1, 2 or 3). The
- * returned coordinates are in order of puyos in puyoBlock.puyos array.
- * @param rotation rotation (0, 1, 2 or 3)
+ * Set block position and update puyos position attributes accordingly.
+ * Doesn't update field's puyo grid.
  */
-PuyoBlock.prototype.getRotatedPuyoPositions = function(rotation) {
-    var rotatedPositions = [];
+PuyoBlock.prototype.setPosition = function(position) {
+    this.position = [position[0], position[1]];
     for(var i = 0; i < this.puyos.length; i++) {
         var x0 = this.originalPositions[i][0];
         var y0 = this.originalPositions[i][1];
         var a = Math.PI / 2 * this.rotation;
         var x = Math.cos(a) * x0 - Math.sin(a) * y0;
         var y = Math.sin(a) * x0 + Math.cos(a) * y0;
-        rotatedPositions.push([this.position[0] + x, this.position[1] + y]);
+        this.puyos[i].position = [this.position[0] + x, this.position[1] + y];
     }
-    return rotatedPositions;
 };
 
+/*
+ * Set block rotation and update puyos position attributes accordingly.
+ * Doesn't update field's puyo grid.
+ */
+PuyoBlock.prototype.setRotation = function(rotation) {
+    this.rotation = rotation;
+    for(var i = 0; i < this.puyos.length; i++) {
+        var x0 = this.originalPositions[i][0];
+        var y0 = this.originalPositions[i][1];
+        var a = Math.PI / 2 * this.rotation;
+        var x = Math.cos(a) * x0 - Math.sin(a) * y0;
+        var y = Math.sin(a) * x0 + Math.cos(a) * y0;
+        this.puyos[i].position = [this.position[0] + x, this.position[1] + y];
+    }
+};

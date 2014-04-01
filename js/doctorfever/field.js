@@ -30,13 +30,11 @@ FieldState.prototype.getPuyoAt = function(x, y) {
 FieldState.prototype.setBlock = function(block) {
     if(!block) { this.block = block; return;}
     var puyos = block.puyos;
-    var puyoPositions = block.getRotatedPuyoPositions();
     this.block = block;
     for(var i = 0; i < puyos.length; i++) {
         var puyo = puyos[i];
-        var pos = puyoPositions[i];
-        puyo.position = [pos[0], pos[1]];
-        this.setPuyoAt(Math.floor(pos[0]), Math.floor(pos[1]), puyos[i]);
+        this.setPuyoAt(Math.floor(puyo.position[0]),
+                Math.floor(puyo.position[1]), puyos[i]);
     }
 };
 
@@ -156,71 +154,166 @@ Field.prototype.addAction = function(action) {
 };
 
 Field.prototype.rotateBlock = function(rotation) {
-    DEBUG_PRINT("Rotate block...");
+    DEBUG_PRINT("Move block...");
     var fieldState = this.state;
     var block = fieldState.block;
-    var newPuyoPositions = block.getRotatedPuyoPositions(rotation);
+    if(!block) {
+        DEBUG_PRINT("No block on the field.");
+        return;
+    }
+    var oldBlockRotation = block.rotation;
     var i;
     var puyo;
-    var newPosition;
-    var newTiledPosition;
-    // Check if rotateabla(does not collide with other puyos/border)
-    for(i = 0; i < block.puyos.length; i++) {
-        newPosition = newPuyoPositions[i];
-        newTiledPosition = [ Math.floor(newPosition[0]),
-                             Math.floor(newPosition[1]) ];
-        if (!( newTiledPosition[0] >= 0 &&
-               newTiledPosition[0] < fieldState.size[0] &&
-               newTiledPosition[1] >= 0 &&
-               newTiledPosition[1] < fieldState.size[1] ))
-        {
-            DEBUG_PRINT("Collision with border - can't rotate");
-             return;
-        }
-        puyo = fieldState.getPuyoAt(newTiledPosition[0], newTiledPosition[1]);
-        if(puyo && block.puyos.indexOf(puyo) == -1) {
-            DEBUG_PRINT("Collision with puyo - can't rotate");
-            return;
-        }
-    }
-
-    // Rotate and update puyo field
     var puyoPosition;
-    var tiledPuyoPosition;
-    block.rotation = rotation;
+    var tiledPosition;
+    // Remove puyos from the field temporarily
     for(i = 0; i < block.puyos.length; i++) {
         puyo = block.puyos[i];
         puyoPosition = puyo.position;
-        tiledPuyoPosition = [ Math.floor(puyoPosition[0]),
+        tiledPosition = [ Math.floor(puyoPosition[0]),
                               Math.floor(puyoPosition[1]) ];
-        fieldState.setPuyoAt( tiledPuyoPosition[0],
-                              tiledPuyoPosition[1],
+        fieldState.setPuyoAt( tiledPosition[0],
+                              tiledPosition[1],
                               undefined );
     }
+    // Rotate the block and check for collisions
+    block.setRotation(rotation);
+    var collided = false;
+    for(i = 0; i < block.puyos.length; i++) {
+        puyoPosition = block.puyos[i].position;
+        tiledPosition = [ Math.floor(puyoPosition[0]),
+                          Math.floor(puyoPosition[1]) ];
+        if (!( tiledPosition[0] >= 0 &&
+               tiledPosition[0] < fieldState.size[0] &&
+               tiledPosition[1] >= 0 &&
+               tiledPosition[1] < fieldState.size[1] ))
+        {
+            DEBUG_PRINT("Collision with border - can't rotate");
+            collided = true;
+            break;
+        }
+        puyo = fieldState.getPuyoAt(tiledPosition[0], tiledPosition[1]);
+        if(puyo) {
+            DEBUG_PRINT("Collision with puyo - can't rotate");
+            collided = true;
+            break;
+        }
+    }
+    // Revert the block rotation if collision
+    if(collided) {
+        block.setRotation(oldBlockRotation);
+    }
+    // Add puyos back to the field
     for(i = 0; i < block.puyos.length; i++) {
         puyo = block.puyos[i];
         puyoPosition = puyo.position;
-        tiledPuyoPosition = [ Math.floor(puyoPosition[0]),
+        tiledPosition = [ Math.floor(puyoPosition[0]),
                               Math.floor(puyoPosition[1]) ];
-        newPosition = newPuyoPositions[i];
-        newTiledPosition = [ Math.floor(newPosition[0]),
-                             Math.floor(newPosition[1]) ];
-        fieldState.setPuyoAt( newTiledPosition[0],
-                              newTiledPosition[1],
+        fieldState.setPuyoAt( tiledPosition[0],
+                              tiledPosition[1],
                               puyo );
-        puyo.position = newPosition;
     }
+};
+
+Field.prototype.moveBlock = function(position) {
+    DEBUG_PRINT("Move block...");
+    var fieldState = this.state;
+    var block = fieldState.block;
+    if(!block) {
+        DEBUG_PRINT("No block on the field.");
+        return;
+    }
+    var oldBlockPosition = [block.position[0], block.position[1]];
+    var i;
+    var puyo;
+    var puyoPosition;
+    var tiledPosition;
+    // Remove puyos from the field temporarily
+    for(i = 0; i < block.puyos.length; i++) {
+        puyo = block.puyos[i];
+        puyoPosition = puyo.position;
+        tiledPosition = [ Math.floor(puyoPosition[0]),
+                              Math.floor(puyoPosition[1]) ];
+        fieldState.setPuyoAt( tiledPosition[0],
+                              tiledPosition[1],
+                              undefined );
+    }
+    // Move the block and check for collisions
+    block.setPosition([position[0], position[1]]);
+    var collided = false;
+    for(i = 0; i < block.puyos.length; i++) {
+        puyoPosition = block.puyos[i].position;
+        tiledPosition = [ Math.floor(puyoPosition[0]),
+                          Math.floor(puyoPosition[1]) ];
+        if (!( tiledPosition[0] >= 0 &&
+               tiledPosition[0] < fieldState.size[0] &&
+               tiledPosition[1] >= 0 &&
+               tiledPosition[1] < fieldState.size[1] ))
+        {
+            DEBUG_PRINT("Collision with border - can't move");
+            collided = true;
+            break;
+        }
+        puyo = fieldState.getPuyoAt(tiledPosition[0], tiledPosition[1]);
+        if(puyo) {
+            DEBUG_PRINT("Collision with puyo - can't move");
+            collided = true;
+            break;
+        }
+    }
+    // Revert the block position if collision
+    if(collided) {
+        block.setPosition(oldBlockPosition);
+    }
+    // Add puyos back to the field
+    for(i = 0; i < block.puyos.length; i++) {
+        puyo = block.puyos[i];
+        puyoPosition = puyo.position;
+        tiledPosition = [ Math.floor(puyoPosition[0]),
+                              Math.floor(puyoPosition[1]) ];
+        fieldState.setPuyoAt( tiledPosition[0],
+                              tiledPosition[1],
+                              puyo );
+    }
+};
+
+Field.prototype.tiltBlockRight = function() {
+    var fieldState = this.state;
+    var block = fieldState.block;
+    if(!block) {
+        DEBUG_PRINT("No block to tilt.");
+        return;
+    }
+    this.moveBlock([block.position[0] + 1, block.position[1]]);
+};
+
+Field.prototype.tiltBlockLeft = function() {
+    var fieldState = this.state;
+    var block = fieldState.block;
+    if(!block) {
+        DEBUG_PRINT("No block to tilt.");
+        return;
+    }
+    this.moveBlock([block.position[0] - 1, block.position[1]]);
 };
 
 Field.prototype.turnBlockRight = function() {
     var fieldState = this.state;
     var block = fieldState.block;
+    if(!block) {
+        DEBUG_PRINT("No block to rotate.");
+        return;
+    }
     this.rotateBlock(block.rotation + 1);
 };
 
 Field.prototype.turnBlockLeft = function() {
     var fieldState = this.state;
     var block = fieldState.block;
+    if(!block) {
+        DEBUG_PRINT("No block to rotate.");
+        return;
+    }
     this.rotateBlock(block.rotation - 1);
 };
 

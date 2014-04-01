@@ -38,6 +38,32 @@ function ActionCreateNewBlock(game, field, currentTime) {
 }
 
 /*
+ * Tilt the block on field right.
+ * If the block were to collide, nothing is done.
+ */
+function ActionTiltBlockRight(game, field, currentTime) {
+    var action = new Action();
+    action.process = function() {
+        DEBUG_PRINT("ActionTiltBlockRight...");
+        field.tiltBlockRight();
+    };
+    return action;
+}
+
+/*
+ * Tilt the block on field left.
+ * If the block were to collide, nothing is done.
+ */
+function ActionTiltBlockLeft(game, field, currentTime) {
+    var action = new Action();
+    action.process = function() {
+        DEBUG_PRINT("ActionTiltBlockRight...");
+        field.tiltBlockLeft();
+    };
+    return action;
+}
+
+/*
  * Rotate the block on field right.
  * If the block were to collide on rotation, nothing is done.
  */

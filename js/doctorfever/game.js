@@ -65,6 +65,14 @@ Game.prototype.initKeys = function() {
         }
         DEBUG_PRINT("Key " + key + " pressed");
         switch(key) {
+            case 39: // ->
+                field.addAction(new ActionTiltBlockRight(game, field,
+                            (new Date()).getTime()));
+                break;
+            case 37: // ->
+                field.addAction(new ActionTiltBlockLeft(game, field,
+                            (new Date()).getTime()));
+                break;
             case 88: // X
                 field.addAction(new ActionTurnBlockRight(game, field,
                             (new Date()).getTime()));
