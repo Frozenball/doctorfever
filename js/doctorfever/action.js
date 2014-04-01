@@ -30,8 +30,7 @@ function ActionCreateNewBlock(game, field, currentTime) {
             var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
             var actionPopPuyos = new ActionPopPuyos(game, field,
                     puyoPopTime);
-            window.setTimeout(actionPopPuyos.process,
-                    puyoPopTime - (new Date()).getTime());
+            field.addAction(actionPopPuyos);
 	}
     };
 
@@ -91,8 +90,7 @@ function ActionDropPuyos(game, field, currentTime) {
             var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
             var actionPopPuyos = new ActionPopPuyos(game, field,
                     puyoPopTime);
-            window.setTimeout(actionPopPuyos.process,
-                    puyoPopTime - (new Date()).getTime());
+            field.addAction(actionPopPuyos);
         }
     };
     return action;
@@ -119,15 +117,13 @@ function ActionPopPuyos(game, field, currentTime) {
             var puyoDropTime = currentTime + CONFIG.puyoDropDelay * 1000;
             var actionDropPuyos = new ActionDropPuyos(game, field,
                     puyoDropTime);
-            window.setTimeout( actionDropPuyos.process,
-                    puyoDropTime - (new Date()).getTime());
+            field.addAction(actionDropPuyos);
         } else {
             DEBUG_PRINT("Schedule block creation");
             var blockCreateTime = currentTime + CONFIG.blockCreateDelay * 1000;
             var actionCreateNewBlock = ActionCreateNewBlock(game, field,
                     blockCreateTime);
-            window.setTimeout(actionCreateNewBlock.process,
-                    blockCreateTime - (new Date()).getTime());
+            field.addAction(actionCreateNewBlock);
         }
     };
 

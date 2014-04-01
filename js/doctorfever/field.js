@@ -79,9 +79,9 @@ function Field(game, size) {
 
 Field.prototype.drawBoard = function(canvas, i) {
     for (var x = 0; x < this.state.size[0]; x++) {
-	var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
-	var puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
-	var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
+        var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
+        var puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
+        var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
         var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
                              CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
         for (var y = 0; y < this.state.size[1]; y++) {
@@ -140,7 +140,7 @@ Field.prototype.addAction = function(action) {
     // the action time.
     var i;
     for(i = this.actions.length - 1; i >= 0; i--  ) {
-        if(actions[i].time <= action.time) {
+        if(this.actions[i].time <= action.time) {
             break;
         }
         if(i < currentActionIndex) {
@@ -149,11 +149,9 @@ Field.prototype.addAction = function(action) {
         }
     }
     DEBUG_PRINT("Adding action " + action +
-            " to action queue at position + " + i);
-    actions.splice(i + 1, 0, action);
-    // Check if a field update is needed sooner than the currently scheduled
-    // one.
-    reScheduleUpdate();
+            " to action queue at position " + i);
+    this.actions.splice(i + 1, 0, action);
+    window.setTimeout(action.process, action.time - (new Date()).getTime());
 };
 
 Field.prototype.rotateBlock = function(rotation) {
