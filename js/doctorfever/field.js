@@ -3,7 +3,7 @@
  * @param size [width, height] size of the puyo field(in tiles)
  */
 function FieldState(size, stateTime) {
-    this.size = size || [CONFIG.boardWidthTiles, CONFIG.boardHeightTiles];
+    this.size = [size[0], size[1]] || [CONFIG.boardWidthTiles, CONFIG.boardHeightTiles];
     this.block = undefined;
     this.puyos = new Array(this.size[0] * this.size[1]);
     this.time = stateTime || (new Date()).getTime();
@@ -59,11 +59,22 @@ FieldState.prototype.debugRandomize = function(){
  * Field Constructor
  * @param size [width, height] size of the puyo field(in tiles)
  */
-function Field(size) {
+function Field(game, size) {
     if (!size) {
         throw new Error('Undefined size');
     }
+    this.game = game;
     this.state = new FieldState(size);
+    this.actions = [];
+    this.currentActionIndex = 0;
+    this.nextUpdate = undefined;
+    this.nextUpdateTimeout = undefined;
+    var nextUpdateTime = this.getNextUpdateTime();
+    if(nextUpdateTime < Infinity) {
+        this.nextUpdate = new ActionUpdateFieldState(game, this, nextUpdateTime);
+        this.nextUpdateTimeout = setTimeout(this.nextUpdate.process,
+                nextUpdateTime - (new Date()).getTime());
+    }
 }
 
 Field.prototype.drawBoard = function(canvas, i) {
@@ -89,6 +100,60 @@ Field.prototype.drawBoard = function(canvas, i) {
             }
         }
     }
+};
+
+/*
+ * Reschedule field update is one is needed suuner than the currently
+ * scheduled one. Returns the time of next update - Infinity if no updates
+ * are scheduled.
+ */
+Field.prototype.reScheduleUpdate = function() {
+    DEBUG_PRINT("Rescheduling field update...");
+    var nextUpdateTime = this.getNextUpdateTime();
+    if (nextUpdateTime == Infinity) {
+        DEBUG_PRINT("No update needed - field isn't changing");
+        window.clearTimeout(this.nextUpdateTimeout);
+        this.nextUpdate = undefined;
+        this.nextUpdateTimeout = undefined;
+    } else if(!this.nextUpdate || nextUpdateTime < this.nextUpdate.time) {
+        window.clearTimeout(this.nextUpdateTimeout);
+        this.nextUpdate = new ActionUpdateFieldState(this.game,
+                this, nextUpdateTime);
+        this.nextUpdateTimout = window.setTimeout(this.nextUpdate.process,
+                nextUpdateTime - (new Date()).getTime());
+        DEBUG_PRINT("Rescheduled next field update.");
+    } else {
+        nextUpdateTime = this.nextUpdate.time;
+    }
+    DEBUG_PRINT("Next update at " + nextUpdateTime);
+    return nextUpdateTime;
+};
+
+/*
+ * Add an action to the queue.
+ * Actions with time before field's currentAction are ignored and not added.
+ * (You can't alter the past... for the time being. With multiplayer/laggy
+ * inputs this should be made possible though.
+ */
+Field.prototype.addAction = function(action) {
+    // Add the action to the actions array, indexed and sorted according to
+    // the action time.
+    var i;
+    for(i = this.actions.length - 1; i >= 0; i--  ) {
+        if(actions[i].time <= action.time) {
+            break;
+        }
+        if(i < currentActionIndex) {
+            DEBUG_PRINT("Can't alter the past.");
+            return;
+        }
+    }
+    DEBUG_PRINT("Adding action " + action +
+            " to action queue at position + " + i);
+    actions.splice(i + 1, 0, action);
+    // Check if a field update is needed sooner than the currently scheduled
+    // one.
+    reScheduleUpdate();
 };
 
 Field.prototype.rotateBlock = function(rotation) {

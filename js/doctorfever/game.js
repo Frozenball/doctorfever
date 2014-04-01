@@ -12,8 +12,8 @@ function Game(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.fields = [];
-    this.fields.push(new Field([6, 12]));
-    this.fields.push(new Field([6, 12]));
+    this.fields.push(new Field(game, [6, 12]));
+    this.fields.push(new Field(game, [6, 12]));
     
     //TEMPORARY TEST CODE
     //this.fields[0].state.debugRandomize();
