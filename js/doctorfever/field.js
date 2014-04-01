@@ -25,12 +25,13 @@ FieldState.prototype.getPuyoAt = function(x, y) {
 
 /*
  * Add PuyoBlock to the field state
- * @param puyoBlock a PuyoBlock
+ * @param block a PuyoBlock
  */
-FieldState.prototype.setBlock = function(puyoBlock) {
-    var puyos = puyoBlock.puyos;
-    var puyoPositions = puyoBlock.getRotatedPuyoPositions();
-    this.block = puyoBlock;
+FieldState.prototype.setBlock = function(block) {
+    if(!block) { this.block = block; return;}
+    var puyos = block.puyos;
+    var puyoPositions = block.getRotatedPuyoPositions();
+    this.block = block;
     for(var i = 0; i < puyos.length; i++) {
         var puyo = puyos[i];
         var pos = puyoPositions[i];
@@ -143,7 +144,7 @@ Field.prototype.addAction = function(action) {
         if(this.actions[i].time <= action.time) {
             break;
         }
-        if(i < currentActionIndex) {
+        if(i < this.currentActionIndex) {
             DEBUG_PRINT("Can't alter the past.");
             return;
         }
@@ -155,61 +156,77 @@ Field.prototype.addAction = function(action) {
 };
 
 Field.prototype.rotateBlock = function(rotation) {
+    DEBUG_PRINT("Rotate block...");
     var fieldState = this.state;
-    var puyoBlock = fieldState.block;
+    var block = fieldState.block;
     var newPuyoPositions = block.getRotatedPuyoPositions(rotation);
     var i;
     var puyo;
     var newPosition;
     var newTiledPosition;
     // Check if rotateabla(does not collide with other puyos/border)
-    for(i = 0; i < newPuyoPositions; i++) {
+    for(i = 0; i < block.puyos.length; i++) {
         newPosition = newPuyoPositions[i];
         newTiledPosition = [ Math.floor(newPosition[0]),
                              Math.floor(newPosition[1]) ];
-        puyo = newTiledPosition[0] >= 0 &&
+        if (!( newTiledPosition[0] >= 0 &&
                newTiledPosition[0] < fieldState.size[0] &&
                newTiledPosition[1] >= 0 &&
-               newTiledPosition[1] < fieldState.size[0] &&
-               fieldState.getPuyoAt(newTiledPosition[0], newTiledPosition[1]);
-        if(puyo && !(puyo in puyoBlock.puyos)) {
+               newTiledPosition[1] < fieldState.size[1] ))
+        {
+            DEBUG_PRINT("Collision with border - can't rotate");
+             return;
+        }
+        puyo = fieldState.getPuyoAt(newTiledPosition[0], newTiledPosition[1]);
+        if(puyo && block.puyos.indexOf(puyo) == -1) {
+            DEBUG_PRINT("Collision with puyo - can't rotate");
             return;
         }
     }
 
     // Rotate and update puyo field
-    puyoBlock.rotation = rotation;
-    for(i = 0; i < puyoBlock.puyos.length; i++) {
-        puyo = puyoBlock.puyos[i];
-        var puyoPosition = puyo.position;
-        var tiledPuyoPosition = [ Math.floor(puyoPosition[0]),
-                                  Math.floor(puyoPosition[1]) ];
-        newTiledPosition = [ Math.floor(newPosition[0]),
-                                 Math.floor(newPosition[1]) ];
+    var puyoPosition;
+    var tiledPuyoPosition;
+    block.rotation = rotation;
+    for(i = 0; i < block.puyos.length; i++) {
+        puyo = block.puyos[i];
+        puyoPosition = puyo.position;
+        tiledPuyoPosition = [ Math.floor(puyoPosition[0]),
+                              Math.floor(puyoPosition[1]) ];
         fieldState.setPuyoAt( tiledPuyoPosition[0],
-                              tiledPuyoPosition,
+                              tiledPuyoPosition[1],
                               undefined );
-        fieldState.setPuyoAt( tiledNewPosition[0],
-                              tiledNewPosition[1],
+    }
+    for(i = 0; i < block.puyos.length; i++) {
+        puyo = block.puyos[i];
+        puyoPosition = puyo.position;
+        tiledPuyoPosition = [ Math.floor(puyoPosition[0]),
+                              Math.floor(puyoPosition[1]) ];
+        newPosition = newPuyoPositions[i];
+        newTiledPosition = [ Math.floor(newPosition[0]),
+                             Math.floor(newPosition[1]) ];
+        fieldState.setPuyoAt( newTiledPosition[0],
+                              newTiledPosition[1],
                               puyo );
+        puyo.position = newPosition;
     }
 };
 
 Field.prototype.turnBlockRight = function() {
     var fieldState = this.state;
-    var puyoBlock = fieldState.block;
-    this.rotateBlock(puyoBlock.rotation + 1);
+    var block = fieldState.block;
+    this.rotateBlock(block.rotation + 1);
 };
 
 Field.prototype.turnBlockLeft = function() {
     var fieldState = this.state;
-    var puyoBlock = fieldState.block;
-    this.rotateBlock(puyoBlock.rotation - 1);
+    var block = fieldState.block;
+    this.rotateBlock(block.rotation - 1);
 };
 
 Field.prototype.updatePuyoPositions = function(currentTime) {
     var fieldState = this.state;
-    
+    var block = fieldState.block;
     // Time delta between current and old state time in seconds
     var time_d = (currentTime - fieldState.time) / 1000;
 
@@ -276,6 +293,10 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
             } else {
                 puyo.velocity[0] = 0;
                 puyo.position[0] = TilePosition[0] + 0.5;
+                if(block && (block.puyos.indexOf(puyo) != -1)) {
+                    fieldState.setBlock(undefined);
+                }
+
             }
             // If not collided vertically, update y position. Otherwise set
             // vertical velocity to 0 and set y position to the center
@@ -285,10 +306,17 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
             } else {
                 puyo.velocity[1] = 0;
                 puyo.position[1] = TilePosition[1] + 0.5;
+                if(block && (block.puyos.indexOf(puyo) != -1)) {
+                    fieldState.setBlock(undefined);
+                }
             }
         }
     }
     
+    if(block) {
+        block.position = [ block.position[0] + block.velocity[0] * time_d,
+                           block.position[1] + block.velocity[1] * time_d ];
+    }
     // Update the state timestamp
     fieldState.time = currentTime;
 };
@@ -330,6 +358,7 @@ Field.prototype.getNextUpdateTime = function() {
                     (nextCoords[1] - puyo.position[1]) / puyo.velocity[1]);
         }
     }
+
     return this.state.time + (nextUpdate + CONFIG.planckTime) * 1000;
 };
 

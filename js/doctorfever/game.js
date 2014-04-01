@@ -15,6 +15,8 @@ function Game(canvas) {
     this.fields.push(new Field(game, [6, 12]));
     this.fields.push(new Field(game, [6, 12]));
     
+    this.initKeys();
+
     //TEMPORARY TEST CODE
     //this.fields[0].state.debugRandomize();
     //this.fields[1].state.debugRandomize();
@@ -49,4 +51,28 @@ Game.prototype.updateGraphics = function() {
     this.fields.forEach(function(field, i){
         field.drawBoard(me, i);
     });
+};
+
+Game.prototype.initKeys = function() {
+    var game = this;
+    var field = this.fields[0];
+    window.onkeydown = function(e) {
+        var key;
+        if(window.event) {
+            key = e.keyCode;
+        } else {
+            key = e.which;
+        }
+        DEBUG_PRINT("Key " + key + " pressed");
+        switch(key) {
+            case 88: // X
+                field.addAction(new ActionTurnBlockRight(game, field,
+                            (new Date()).getTime()));
+                break;
+            case 90: // Z
+                field.addAction(new ActionTurnBlockLeft(game, field,
+                            (new Date()).getTime()));
+                break;
+        }
+    };
 };

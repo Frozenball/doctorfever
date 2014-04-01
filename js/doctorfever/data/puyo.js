@@ -132,8 +132,7 @@ function PuyoBlock(blockType, position, velocity) {
                              [ this.position[0] + pos[0],
                                this.position[1] + pos[1] ],
                              [this.velocity[0], this.velocity[1]]) );
-            this.originalPositions.push([ this.position[0] + pos[0],
-                                          this.position[1] + pos[1] ]);
+            this.originalPositions.push([ pos[0], pos[1] ]);
         }
     }
 }
@@ -151,7 +150,7 @@ PuyoBlock.prototype.getRotatedPuyoPositions = function(rotation) {
         var a = Math.PI / 2 * this.rotation;
         var x = Math.cos(a) * x0 - Math.sin(a) * y0;
         var y = Math.sin(a) * x0 + Math.cos(a) * y0;
-        rotatedPositions.push([x, y]);
+        rotatedPositions.push([this.position[0] + x, this.position[1] + y]);
     }
     return rotatedPositions;
 };
