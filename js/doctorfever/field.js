@@ -106,6 +106,23 @@ Field.prototype.drawBoard = function(canvas, i) {
     }
 };
 
+Field.prototype.getGfxData = function(canvas, i) {
+    if(canvas.fieldsGfx === undefined) { canvas.fieldsGfx = {}; }
+    if(canvas.fieldsGfx[i] === undefined) {
+        canvas.fieldsGfx[i] = {};
+        fieldGfx = canvas.fieldsGfx[i];
+        fieldGfx.score = 0;
+        fieldGfx.counter = 0;
+        fieldGfx.lastScore = 0;
+        fieldGfx.scoreDisp = 0;
+        fieldGfx.scoreAnimBegin = 0;
+        fieldGfx.chainOver = true;
+        fieldGfx.reset = true;
+    }
+    var fieldGfx = canvas.fieldsGfx[i];
+    return fieldGfx;
+};
+
 /*
  * Draw current chain text to the given canvas. i defines the index and
  * positioning of the field
@@ -113,7 +130,6 @@ Field.prototype.drawBoard = function(canvas, i) {
 Field.prototype.drawChainText = function(canvas, i) {
     if(!this.chains) { return; }
     var chain = this.chains[this.chains.length - 1];
-    if(chain.sets.length <= 0) { return; }
     
     // Fetch some important values
     var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
@@ -123,53 +139,66 @@ Field.prototype.drawChainText = function(canvas, i) {
         i * boardPadding[2], boardPadding[1]];
     var boardCenter = [ boardOffset[0] + boardSize[0] / 2,
                         boardOffset[1] + boardSize[1] / 2 ]; 
-    
+
     var ctx = canvas.ctx;
     
     var counter = chain.sets.length;
     var score = chain.score;
    
     // Cool animation stuff...
-    /* This would increase the score meter gradually 2 seconds from the
-     * score change... not working for some reason though -
-     * fieldData.score gets assigned NaN
-    if(canvas.fields === undefined) { canvas.fields = {}; }
-    if(canvas.fields[i] === undefined) {
-        canvas.fields[i] = {};
-        canvas.fields[i].score = 0;
-        canvas.fields[i].counter = 0;
-        canvas.fields[i].lastScore = 0;
-        canvas.fields[i].scoreAnimBegin = 0;
+    var t = (new Date()).getTime();
+    var fieldGfx = this.getGfxData(canvas, i);
+    if(fieldGfx.counter < counter)
+    {
+        fieldGfx.lastScore = fieldGfx.score;
+        fieldGfx.score = score;
+        fieldGfx.scoreDisp = 0;
+        fieldGfx.counter = counter;
+        fieldGfx.chainOver = false;
+        fieldGfx.scoreAnimBegin = t;
+        fieldGfx.reset = false;
+    } else if(fieldGfx.chainOver && counter > 0)
+    {
+        fieldGfx.lastScore = 0;
+        fieldGfx.score = score;
+        fieldGfx.scoreDisp = 0;
+        fieldGfx.counter = counter;
+        fieldGfx.ChainOver = false;
+        fieldGfx.scoreAnimBegin = t;
+        fieldGfx.reset = false;
+    } else if(!fieldGfx.reset && fieldGfx.chainOver &&
+            t - fieldGfx.scoreAnimBegin > 3000)
+    {
+        fieldGfx.lastScore = 0;
+        fieldGfx.score = 0;
+        fieldGfx.scoreDisp = 0;
+        fieldGfx.counter = 0;
+        fieldGfx.scoreAnimBegin = 0;
+        fieldGfx.reset = true;
+        return;
+    } else if(fieldGfx.reset && fieldGfx.chainOver)
+    {
+        return;
     }
-    var fieldData = canvas.fields[i];
-    if(fieldData.counter < counter) {
-        fieldData.scoreAnimBegin = (new Date()).getTime();
-        fieldData.lastScore = fieldData.score;
-        fieldData.counter = counter;
-    }
-    if(fieldData.counter > counter) {
-        fieldData.counter = 0;
-    }
-    var f = ((new Date()).getTime() - fieldData.scoreAnimBegin) / 2000;
-    f = Math.min(f, 1);
+    if(fieldGfx.counter > counter) { fieldGfx.chainOver = true; }
 
-    fieldData.score = fieldData.lastScore + f * (score - fieldData.lastScore);
-    fieldData.score = Math.floor(fieldData.score);
-    */
+    var f = Math.min((t - fieldGfx.scoreAnimBegin) / 2000, 1);
+
+    fieldGfx.scoreDisp = fieldGfx.lastScore + f * (fieldGfx.score - fieldGfx.lastScore);
+    fieldGfx.scoreDisp = Math.floor(fieldGfx.scoreDisp); 
 
     // Draw the chain&score texts
-
-    var counterText = "Chain: " + counter;
-    var scoreText = "Score: " + score; 
-
-    ctx.font = "48px Iceland";
+    var counterText = "Chain: " + fieldGfx.counter;
+    var scoreText = "Score: " + fieldGfx.scoreDisp; 
+    var fontF = Math.min(fieldGfx.scoreDisp / 300, 2) + 0.5;
+    ctx.font = Math.floor(fontF * 48) +"px Iceland";
     ctx.fillStyle = "#FF00FF";
     var counterDim = stringDimensions(counterText, ctx.font);
     var counterPos = [ boardCenter[0] - counterDim[0] / 2,
                        boardCenter[1] - counterDim[1] ];
     ctx.fillText(counterText, counterPos[0], counterPos[1]);
     ctx.fillStyle = "#00FFFF";
-    ctx.font = "32px Iceland";
+    ctx.font = Math.floor(fontF * 32) + "px Iceland";
     var scoreDim = stringDimensions(scoreText, ctx.font);
     var scorePos = [ boardCenter[0] - scoreDim[0] / 2,
                      boardCenter[1] ];
@@ -228,14 +257,14 @@ Field.prototype.addAction = function(action) {
     window.setTimeout(action.process, action.time - (new Date()).getTime());
 };
 
+/*
+ * Rotate the block to given rotation.
+ * Return true/false whether or not the rotation succeeded.
+ */
 Field.prototype.rotateBlock = function(rotation) {
-    DEBUG_PRINT("Move block...");
     var fieldState = this.state;
     var block = fieldState.block;
-    if(!block) {
-        DEBUG_PRINT("No block on the field.");
-        return;
-    }
+    if(!block) { return false; }
     var oldBlockRotation = block.rotation;
     var i;
     var puyo;
@@ -288,16 +317,18 @@ Field.prototype.rotateBlock = function(rotation) {
                               tiledPosition[1],
                               puyo );
     }
+    return collided;
 };
 
+/*
+ * Move the block to given position
+ * Return true/false whether or not the move succeeded
+ */
 Field.prototype.moveBlock = function(position) {
     DEBUG_PRINT("Move block...");
     var fieldState = this.state;
     var block = fieldState.block;
-    if(!block) {
-        DEBUG_PRINT("No block on the field.");
-        return;
-    }
+    if(!block) { return false; }
     var oldBlockPosition = [block.position[0], block.position[1]];
     var i;
     var puyo;
@@ -350,6 +381,7 @@ Field.prototype.moveBlock = function(position) {
                               tiledPosition[1],
                               puyo );
     }
+    return collided;
 };
 
 Field.prototype.tiltBlockRight = function() {
@@ -372,24 +404,43 @@ Field.prototype.tiltBlockLeft = function() {
     this.moveBlock([block.position[0] - 1, block.position[1]]);
 };
 
+/*
+ * Turn the block left
+ * Return true/false whether or not the turn succeeded
+ */
 Field.prototype.turnBlockRight = function() {
     var fieldState = this.state;
     var block = fieldState.block;
-    if(!block) {
-        DEBUG_PRINT("No block to rotate.");
-        return;
-    }
-    this.rotateBlock(block.rotation + 1);
+    if(!block) { return false; }
+    return this.rotateBlock(block.rotation + 1);
 };
 
+/*
+ * Turn the block left
+ * Return true/false whether or not the turn succeeded
+ */
 Field.prototype.turnBlockLeft = function() {
     var fieldState = this.state;
     var block = fieldState.block;
-    if(!block) {
-        DEBUG_PRINT("No block to rotate.");
-        return;
+    if(!block) { return false;}
+    return this.rotateBlock(block.rotation - 1);
+};
+
+/*
+ * Drop the block
+ * return true/false whether or not the drop succeeded.
+ */
+Field.prototype.dropBlock = function() {
+    var fieldState = this.state;
+    var block = fieldState.block;
+    if(!block) { return false; }
+    var puyos = block.puyos;
+    for(var i = 0; i < puyos.length; i++) {
+        var puyo = puyos[i];
+        puyo.velocity = [CONFIG.puyoDropVelocityX, CONFIG.puyoDropVelocityY];
     }
-    this.rotateBlock(block.rotation - 1);
+    fieldState.setBlock(undefined);
+    return true;
 };
 
 Field.prototype.updatePuyoPositions = function(currentTime) {
@@ -487,6 +538,7 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
     }
     // Update the state timestamp
     fieldState.time = currentTime;
+
 };
 
 /*
@@ -636,6 +688,7 @@ Field.prototype.popPuyoSets = function(puyoSets) {
 Field.prototype.dropPuyos = function() {
     var fieldState = this.state;
     var fieldSize = fieldState.size;
+    fieldState.setBlock(undefined);
     for(var x = 0; x < fieldSize[0]; x++) {
         for(var y = fieldSize[1] - 1; y > 0; y--) {
             if(!fieldState.getPuyoAt(x, y)) {

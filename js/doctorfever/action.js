@@ -45,7 +45,11 @@ function ActionTiltBlockRight(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
         DEBUG_PRINT("ActionTiltBlockRight...");
-        field.tiltBlockRight();
+        if(!field.tiltBlockRight()) {
+            DEBUG_PRINT("Unable to tilt the block");
+            return;
+        }
+        DEBUG_PRINT("Block tilted to right");
     };
     return action;
 }
@@ -58,7 +62,11 @@ function ActionTiltBlockLeft(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
         DEBUG_PRINT("ActionTiltBlockRight...");
-        field.tiltBlockLeft();
+        if(!field.tiltBlockLeft()) {
+            DEBUG_PRINT("Unable to tilt the block");
+            return;
+        }
+        DEBUG_PRINT("Block tilted to left");
     };
     return action;
 }
@@ -71,7 +79,11 @@ function ActionTurnBlockRight(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
         DEBUG_PRINT("ActionTurnBlockRight...");
-        field.turnBlockRight();
+        if(!field.turnBlockRight()) {
+            DEBUG_PRINT("Unable to turn the block");
+            return;
+        }
+        DEBUG_PRINT("Block turned to right");
     };
     return action;
 }
@@ -84,7 +96,39 @@ function ActionTurnBlockLeft(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
         DEBUG_PRINT("ActionTurnBlockLeft...");
-        field.turnBlockLeft();
+        if(!field.turnBlockLeft()) {
+            DEBUG_PRINT("Unable to turn the block");
+            return;
+        }
+        DEBUG_PRINT("Block turned to left");
+    };
+    return action;
+}
+
+/*
+ * Drop the block.
+ */
+function ActionDropBlock(game, field, currentTime) {
+    var action = new Action();
+    action.process = function() {
+        DEBUG_PRINT("ActionDropBlock...");
+        if(!field.dropBlock()) {
+            DEBUG_PRINT("Unable to drop the block");
+            return;
+        }
+
+        // Reschedule next field update if needed 
+        // Alternatively, if the field is not updating (no puyos moving) and
+        // therefore next update is at Infinity, schedule an action to check
+        // if puyos needs to be popped/destroyed.
+        var nextUpdateTime = field.reScheduleUpdate();
+        if(nextUpdateTime == Infinity) {
+            DEBUG_PRINT("Schedule puyo pop");
+            var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
+            var actionPopPuyos = new ActionPopPuyos(game, field,
+                    puyoPopTime);
+            field.addAction(actionPopPuyos);
+        }
     };
     return action;
 }
@@ -180,11 +224,11 @@ function ActionUpdateFieldState(game, field, currentTime) {
         DEBUG_PRINT("ActionUpdateFieldState...");
         // Update puyo positions on given fieldState
         field.updatePuyoPositions(currentTime);
-	field.nextUpdate = undefined;
         // Reschedule next field update if needed
         // Alternatively, if the field is not updating (no puyos moving) and
         // therefore next update is at Infinity, schedule an action to check
         // if puyos needs to be popped/destroyed.
+        field.nextUpdate = undefined;
         var nextUpdateTime = field.reScheduleUpdate();
         if(nextUpdateTime == Infinity) {
             DEBUG_PRINT("Schedule puyo pop");

@@ -12,8 +12,10 @@ function Game(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.fields = [];
-    this.fields.push(new Field(game, [6, 12]));
-    this.fields.push(new Field(game, [6, 12]));
+    this.fields.push(new Field(game, [CONFIG.boardWidthTiles,
+                CONFIG.boardHeightTiles]));
+    this.fields.push(new Field(game, [CONFIG.boardWidthTiles,
+                CONFIG.boardHeightTiles]));
     
     this.initKeys();
 
@@ -35,12 +37,12 @@ function Game(canvas) {
             game,
             this.fields[0],
             date.getTime() + 100);
-    var actionCreateNewBlock2 = ActionCreateNewBlock(
-            game,
-            this.fields[1],
-            date.getTime() + 100);
+    //var actionCreateNewBlock2 = ActionCreateNewBlock(
+    //        game,
+    //        this.fields[1],
+    //        date.getTime() + 100);
     window.setTimeout(actionCreateNewBlock1.process, 110);
-    window.setTimeout(actionCreateNewBlock2.process, 110);
+   // window.setTimeout(actionCreateNewBlock2.process, 110);
     console.log("Hello World :-)");
 }
 
@@ -68,12 +70,16 @@ Game.prototype.initKeys = function() {
         }
         DEBUG_PRINT("Key " + key + " pressed");
         switch(key) {
-            case 39: // ->
+            case 39: // Right
                 field.addAction(new ActionTiltBlockRight(game, field,
                             (new Date()).getTime()));
                 break;
-            case 37: // ->
+            case 37: // Left
                 field.addAction(new ActionTiltBlockLeft(game, field,
+                            (new Date()).getTime()));
+                break;
+            case 38: // Up
+                field.addAction(new ActionDropBlock(game, field,
                             (new Date()).getTime()));
                 break;
             case 88: // X
