@@ -13,7 +13,8 @@ function stringDimensions(string, font) {
     return [w, h];
 }
 
-function DEBUG_PRINT(text) {
-    if (CONFIG.debug) { console.log(text); }
+function DEBUG_PRINT(text, level) {
+    var d = new Date();
+    if (CONFIG.debug >= level) { console.log("[" + Math.floor(d.getTime()) + "] " + text); }
 }
 

@@ -195,13 +195,13 @@ Field.prototype.drawChainText = function(canvas, i) {
     ctx.fillStyle = "#FF00FF";
     var counterDim = stringDimensions(counterText, ctx.font);
     var counterPos = [ boardCenter[0] - counterDim[0] / 2,
-                       boardCenter[1] - counterDim[1] ];
+                       boardCenter[1] ];
     ctx.fillText(counterText, counterPos[0], counterPos[1]);
     ctx.fillStyle = "#00FFFF";
     ctx.font = Math.floor(fontF * 32) + "px Iceland";
     var scoreDim = stringDimensions(scoreText, ctx.font);
     var scorePos = [ boardCenter[0] - scoreDim[0] / 2,
-                     boardCenter[1] ];
+                     boardCenter[1] + counterDim[1]];
     ctx.fillText(scoreText, scorePos[0], scorePos[1]);
 };
 
@@ -211,24 +211,24 @@ Field.prototype.drawChainText = function(canvas, i) {
  * are scheduled.
  */
 Field.prototype.reScheduleUpdate = function() {
-    DEBUG_PRINT("Rescheduling field update...");
+    DEBUG_PRINT("Rescheduling field update...", 2);
     var nextUpdateTime = this.getNextUpdateTime();
     if (nextUpdateTime == Infinity) {
-        DEBUG_PRINT("No update needed - field isn't changing");
+        DEBUG_PRINT("No update needed - field isn't changing", 2);
         window.clearTimeout(this.nextUpdateTimeout);
         this.nextUpdate = undefined;
         this.nextUpdateTimeout = undefined;
     } else if(!this.nextUpdate || nextUpdateTime < this.nextUpdate.time) {
-        window.clearTimeout(this.nextUpdateTimeout);
+        clearTimeout(this.nextUpdateTimeout);
         this.nextUpdate = new ActionUpdateFieldState(this.game,
                 this, nextUpdateTime);
-        this.nextUpdateTimout = window.setTimeout(this.nextUpdate.process,
+        this.nextUpdateTimeout = setTimeout(this.nextUpdate.process,
                 nextUpdateTime - (new Date()).getTime());
-        DEBUG_PRINT("Rescheduled next field update.");
+        DEBUG_PRINT("Rescheduled next field update.", 2);
     } else {
         nextUpdateTime = this.nextUpdate.time;
     }
-    DEBUG_PRINT("Next update at " + nextUpdateTime);
+    DEBUG_PRINT("Next update at " + nextUpdateTime, 2);
     return nextUpdateTime;
 };
 
@@ -247,12 +247,12 @@ Field.prototype.addAction = function(action) {
             break;
         }
         if(i < this.currentActionIndex) {
-            DEBUG_PRINT("Can't alter the past.");
+            DEBUG_PRINT("Can't alter the past.", 3);
             return;
         }
     }
     DEBUG_PRINT("Adding action " + action +
-            " to action queue at position " + i);
+            " to action queue at position " + i, 3);
     this.actions.splice(i + 1, 0, action);
     window.setTimeout(action.process, action.time - (new Date()).getTime());
 };
@@ -292,13 +292,13 @@ Field.prototype.rotateBlock = function(rotation) {
                tiledPosition[1] >= 0 &&
                tiledPosition[1] < fieldState.size[1] ))
         {
-            DEBUG_PRINT("Collision with border - can't rotate");
+            DEBUG_PRINT("Collision with border - can't rotate", 3);
             collided = true;
             break;
         }
         puyo = fieldState.getPuyoAt(tiledPosition[0], tiledPosition[1]);
         if(puyo) {
-            DEBUG_PRINT("Collision with puyo - can't rotate");
+            DEBUG_PRINT("Collision with puyo - can't rotate", 3);
             collided = true;
             break;
         }
@@ -325,7 +325,7 @@ Field.prototype.rotateBlock = function(rotation) {
  * Return true/false whether or not the move succeeded
  */
 Field.prototype.moveBlock = function(position) {
-    DEBUG_PRINT("Move block...");
+    DEBUG_PRINT("Moving block to " + position, 3);
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) { return false; }
@@ -356,13 +356,13 @@ Field.prototype.moveBlock = function(position) {
                tiledPosition[1] >= 0 &&
                tiledPosition[1] < fieldState.size[1] ))
         {
-            DEBUG_PRINT("Collision with border - can't move");
+            DEBUG_PRINT("Collision with border - can't move", 3);
             collided = true;
             break;
         }
         puyo = fieldState.getPuyoAt(tiledPosition[0], tiledPosition[1]);
         if(puyo) {
-            DEBUG_PRINT("Collision with puyo - can't move");
+            DEBUG_PRINT("Collision with puyo - can't move", 3);
             collided = true;
             break;
         }
@@ -388,7 +388,7 @@ Field.prototype.tiltBlockRight = function() {
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) {
-        DEBUG_PRINT("No block to tilt.");
+        DEBUG_PRINT("No block to tilt.", 3);
         return;
     }
     this.moveBlock([block.position[0] + 1, block.position[1]]);
@@ -398,7 +398,7 @@ Field.prototype.tiltBlockLeft = function() {
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) {
-        DEBUG_PRINT("No block to tilt.");
+        DEBUG_PRINT("No block to tilt.", 3);
         return;
     }
     this.moveBlock([block.position[0] - 1, block.position[1]]);
