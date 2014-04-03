@@ -51,6 +51,9 @@ Game.prototype.updateGraphics = function() {
     this.ctx.fillStyle = 'rgb(33, 33, 33)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.fields.forEach(function(field){
+        field.drawBackground(me);
+    });
+    this.fields.forEach(function(field){
         field.drawBoard(me);
     });
     this.fields.forEach(function(field){

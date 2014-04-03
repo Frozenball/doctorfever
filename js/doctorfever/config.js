@@ -1,17 +1,17 @@
 CONFIG = window.CONFIG || {};
 CONFIG.debug = 0;
 
-CONFIG.puyoWidth = 40;
-CONFIG.puyoHeight = 40;
+CONFIG.puyoWidth = 48;
+CONFIG.puyoHeight = 48;
 CONFIG.puyoPaddingX = 2;
 CONFIG.puyoPaddingY = 2;
-CONFIG.boardWidthTiles = 8;
-CONFIG.boardHeightTiles = 16;
+CONFIG.boardWidthTiles = 6;
+CONFIG.boardHeightTiles = 13;
 CONFIG.boardWidth = CONFIG.boardWidthTiles * (CONFIG.puyoWidth + CONFIG.puyoPaddingX);
 CONFIG.boardHeight = CONFIG.boardHeightTiles * (CONFIG.puyoHeight + CONFIG.puyoPaddingY);
-CONFIG.boardPaddingRight = 30;
+CONFIG.boardPaddingRight = 50;
 CONFIG.boardPaddingBottom = 30;
-CONFIG.boardPaddingLeft = 150;
+CONFIG.boardPaddingLeft = 180;
 CONFIG.boardPaddingTop = 30;
 
 CONFIG.puyoFallVelocityX = 0;

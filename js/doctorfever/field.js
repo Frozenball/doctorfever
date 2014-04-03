@@ -194,11 +194,38 @@ Field.prototype.drawGfx = function(canvas) {
     this.drawChainText(canvas);
 };
 
+Field.prototype.drawBackground = function(canvas) {
+    var ctx = canvas.ctx;
+    var gfx = this.getGfxData(canvas);
+    var state = this.state;
+
+    var b = 32;
+    var r= 32;
+    var g = 32;
+    if(this.chains) {
+        b = this.chains[this.chains.length - 1].sets.length / 10 * 128;
+        r = this.chains[this.chains.length - 1].sets.length / 20 * 128;
+        g = 32;
+    }
+    var bgGradient = ctx.createLinearGradient(0, 0, gfx.boardSize[0], gfx.boardSize[1]);
+    bgGradient.addColorStop(0, "rgb(" + 
+                                Math.ceil(r) + "," +
+                                Math.ceil(g) + "," +
+                                Math.ceil(b) + ")");
+    bgGradient.addColorStop(1, "rgb(" +
+                                Math.ceil(0.1 * r) +"," +
+                                Math.ceil(0.1 * g) + "," +
+                                Math.ceil(0.1 * b) + ")");
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
+};
+
 Field.prototype.drawTrashMeter = function(canvas) {
     var f, g, h, x, y, w;
     var ctx = canvas.ctx;
     var gfx = this.getGfxData(canvas);
     var state = this.state;
+    
     ctx.fillStyle = "#555555";
     ctx.strokeStyle = "FF7700";
     ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1],
