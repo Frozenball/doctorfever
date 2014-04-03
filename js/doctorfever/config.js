@@ -1,5 +1,5 @@
 CONFIG = window.CONFIG || {};
-CONFIG.debug = true;
+CONFIG.debug = 3;
 
 CONFIG.puyoWidth = 40;
 CONFIG.puyoHeight = 40;

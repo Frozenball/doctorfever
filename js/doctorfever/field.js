@@ -13,14 +13,14 @@ FieldState.prototype.setPuyoAt = function(x, y, val) {
     if (x < 0 || x >= this.size[0] || y < 0 || y >= this.size[1]) {
         throw new Error('Out of bounds error');
     }
-    this.puyos[x + y * this.size[1]] = val;
+    this.puyos[Math.floor(x) + Math.floor(y) * this.size[1]] = val;
 };
 
 FieldState.prototype.getPuyoAt = function(x, y) {
     if (x < 0 || x >= this.size[0] || y < 0 || y >= this.size[1]) {
         throw new Error('Out of bounds error');
     }
-    return this.puyos[x + y*this.size[1]];
+    return this.puyos[Math.floor(x) + Math.floor(y)*this.size[1]];
 };
 
 /*
@@ -38,14 +38,48 @@ FieldState.prototype.setBlock = function(block) {
     }
 };
 
+FieldState.prototype.generateChain = function(chainCount, patternIndex) {
+    this.setBlock(undefined);
+    var chain = chains[patternIndex];
+    var puyos = chain[0];
+    var colors = chain[1];
+    if(this.size[0] < puyos[0].length || this.size[1] < puyos.length) {
+        DEBUG_PRINT("Field too small, created chain will be broken.");
+        return;
+    }
+    for(var x = 0; x < this.size[0]; x++) {
+        for(var y = 0; y < this.size[1]; y++) {
+            var velocity, type, position, puyo;
+            if(x >= puyos[0].length || y >= puyos.length ||
+                    !puyos[y][x] || puyos[y][x] > chainCount)
+            {
+                puyo = undefined;
+            } else
+            {
+                velocity = [CONFIG.puyoDropVelocityX,
+                CONFIG.puyoDropVelocityY];
+                type = coloredPuyos[colors[y][x]];
+                position = [x + 0.5, y + 0.5];
+                puyo = new Puyo(type, position, velocity);
+            }
+            this.setPuyoAt(x, y, puyo);
+        }
+    }
+};
+
 /*
  * Add some random puyos to the field
  */
 FieldState.prototype.debugRandomize = function(){
+    this.setBlock(undefined);
     for (var x = 0; x < this.size[0]; x++) {
         for (var y = 0; y < this.size[1]; y++) {
             if (randint(0, 10) <= 5) {
-                var puyo = new Puyo(coloredPuyos[randint(0,3)], [x, y], [0, 2] );
+                var velocity = [CONFIG.puyoDropVelocityX,
+                    CONFIG.puyoDropVelocityY];
+                var type = coloredPuyos[randint(0,3)];
+                var position = [x + 0.5, y + 0.5];
+                var puyo = new Puyo(type, position, velocity);
                 this.setPuyoAt(x, y, puyo);
             }
         }
@@ -211,24 +245,24 @@ Field.prototype.drawChainText = function(canvas, i) {
  * are scheduled.
  */
 Field.prototype.reScheduleUpdate = function() {
-    DEBUG_PRINT("Rescheduling field update...", 2);
+    DEBUG_PRINT("Rescheduling field update...", 5);
     var nextUpdateTime = this.getNextUpdateTime();
     if (nextUpdateTime == Infinity) {
-        DEBUG_PRINT("No update needed - field isn't changing", 2);
+        DEBUG_PRINT("No update needed - field isn't changing", 5);
         window.clearTimeout(this.nextUpdateTimeout);
         this.nextUpdate = undefined;
         this.nextUpdateTimeout = undefined;
-    } else if(!this.nextUpdate || nextUpdateTime < this.nextUpdate.time) {
+    } else if(!this.nextUpdate || nextUpdateTime != this.nextUpdate.time) {
         clearTimeout(this.nextUpdateTimeout);
         this.nextUpdate = new ActionUpdateFieldState(this.game,
                 this, nextUpdateTime);
         this.nextUpdateTimeout = setTimeout(this.nextUpdate.process,
                 nextUpdateTime - (new Date()).getTime());
-        DEBUG_PRINT("Rescheduled next field update.", 2);
+        DEBUG_PRINT("Rescheduled next field update.", 5);
     } else {
         nextUpdateTime = this.nextUpdate.time;
     }
-    DEBUG_PRINT("Next update at " + nextUpdateTime, 2);
+    DEBUG_PRINT("Next update at " + nextUpdateTime, 5);
     return nextUpdateTime;
 };
 
@@ -700,5 +734,13 @@ Field.prototype.dropPuyos = function() {
             }
         }
     }
+};
+
+Field.prototype.createChain = function(currentTime, chainCount) {
+    var patternIndex = randint(0, chains.length - 1);
+    DEBUG_PRINT("Creating chain of " + chainCount, 2,
+                "With pattern index " + patternIndex); 
+    this.state.generateChain(chainCount, patternIndex);
+    this.state.time = currentTime;
 };
 

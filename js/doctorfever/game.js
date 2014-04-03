@@ -37,12 +37,12 @@ function Game(canvas) {
             game,
             this.fields[0],
             date.getTime() + 100);
-    //var actionCreateNewBlock2 = ActionCreateNewBlock(
-    //        game,
-    //        this.fields[1],
-    //        date.getTime() + 100);
+    var actionCreateNewBlock2 = ActionCreateNewBlock(
+            game,
+            this.fields[1],
+            date.getTime() + 100);
     window.setTimeout(actionCreateNewBlock1.process, 110);
-   // window.setTimeout(actionCreateNewBlock2.process, 110);
+    window.setTimeout(actionCreateNewBlock2.process, 110);
     console.log("Hello World :-)");
 }
 
@@ -68,7 +68,7 @@ Game.prototype.initKeys = function() {
         } else {
             key = e.which;
         }
-        DEBUG_PRINT("Key " + key + " pressed");
+        DEBUG_PRINT("Key " + key + " pressed", 2);
         switch(key) {
             case 39: // Right
                 field.addAction(new ActionTiltBlockRight(game, field,
@@ -89,6 +89,19 @@ Game.prototype.initKeys = function() {
             case 90: // Z
                 field.addAction(new ActionTurnBlockLeft(game, field,
                             (new Date()).getTime()));
+                break;
+
+            case 49:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+            case 54:
+            case 55:
+            case 56:
+            case 57:
+                window.setTimeout((new ActionCreateChain(game, game.fields[0],
+                                (new Date()).getTime(), key - 48)).process, 0);
                 break;
         }
     };
