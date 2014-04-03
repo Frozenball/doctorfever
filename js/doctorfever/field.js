@@ -1,14 +1,32 @@
 /*
  * State Constructor
  * @param size [width, height] size of the puyo field(in tiles)
+ * @param stateTime Initial point of time for the state
  */
 function FieldState(size, stateTime) {
+    //Size of the puyo field
     this.size = [size[0], size[1]] || [CONFIG.boardWidthTiles, CONFIG.boardHeightTiles];
-    this.block = undefined;
+    // Puyo array
     this.puyos = new Array(this.size[0] * this.size[1]);
+    // Currently falling block
+    this.block = undefined;
+    // trash in store is moved to trash on block init(if trashDrop is set)
+    this.trashInStore = 0;
+    this.trash = 0;
+    // Indicates whether or no trash drop is incoming()
+    this.trashDrop = true;
+    // Point of time this state represents
     this.time = stateTime || (new Date()).getTime();
 }
 
+/*
+ * Set puyo at given coordinates
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param val puyo to add
+ * Coordinates are rounded down. Throws error if coordinates outside of the
+ * puyo field
+ */
 FieldState.prototype.setPuyoAt = function(x, y, val) {
     if (x < 0 || x >= this.size[0] || y < 0 || y >= this.size[1]) {
         throw new Error('Out of bounds error');
@@ -16,6 +34,13 @@ FieldState.prototype.setPuyoAt = function(x, y, val) {
     this.puyos[Math.floor(x) + Math.floor(y) * this.size[1]] = val;
 };
 
+/*
+ * Set puyo at given coordinates
+ * @param x x coordinate
+ * @param y y coordinate
+ * Coordinates are rounded down. Throws error if coordinates outside of the
+ * puyo field. Returns the puyo at given coordinates(may be undefined).
+ */
 FieldState.prototype.getPuyoAt = function(x, y) {
     if (x < 0 || x >= this.size[0] || y < 0 || y >= this.size[1]) {
         throw new Error('Out of bounds error');
@@ -44,7 +69,7 @@ FieldState.prototype.generateChain = function(chainCount, patternIndex) {
     var puyos = chain[0];
     var colors = chain[1];
     if(this.size[0] < puyos[0].length || this.size[1] < puyos.length) {
-        DEBUG_PRINT("Field too small, created chain will be broken.");
+        DEBUG_PRINT("field " + this.index + ": " + "Field too small, created chain will be broken.");
         return;
     }
     for(var x = 0; x < this.size[0]; x++) {
@@ -92,11 +117,12 @@ FieldState.prototype.debugRandomize = function(){
  * Field Constructor
  * @param size [width, height] size of the puyo field(in tiles)
  */
-function Field(game, size) {
+function Field(game, size, index) {
     if (!size) {
         throw new Error('Undefined size');
     }
     this.game = game;
+    this.index = index;
     this.state = new FieldState(size);
     this.actions = [];
     this.currentActionIndex = 0;
@@ -115,7 +141,8 @@ function Field(game, size) {
  * Draw puyos on the field to the given canvas. i defines the index and
  * positioning of the field.
  */
-Field.prototype.drawBoard = function(canvas, i) {
+Field.prototype.drawBoard = function(canvas) {
+    var i = this.index;
     for (var x = 0; x < this.state.size[0]; x++) {
         var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
         var puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
@@ -140,7 +167,8 @@ Field.prototype.drawBoard = function(canvas, i) {
     }
 };
 
-Field.prototype.getGfxData = function(canvas, i) {
+Field.prototype.getGfxData = function(canvas) {
+    var i = this.index;
     if(canvas.fieldsGfx === undefined) { canvas.fieldsGfx = {}; }
     if(canvas.fieldsGfx[i] === undefined) {
         canvas.fieldsGfx[i] = {};
@@ -161,7 +189,8 @@ Field.prototype.getGfxData = function(canvas, i) {
  * Draw current chain text to the given canvas. i defines the index and
  * positioning of the field
  */
-Field.prototype.drawChainText = function(canvas, i) {
+Field.prototype.drawChainText = function(canvas) {
+    var i = this.index;
     if(!this.chains) { return; }
     var chain = this.chains[this.chains.length - 1];
     
@@ -181,7 +210,7 @@ Field.prototype.drawChainText = function(canvas, i) {
    
     // Cool animation stuff...
     var t = (new Date()).getTime();
-    var fieldGfx = this.getGfxData(canvas, i);
+    var fieldGfx = this.getGfxData(canvas);
     if(fieldGfx.counter < counter)
     {
         fieldGfx.lastScore = fieldGfx.score;
@@ -245,10 +274,10 @@ Field.prototype.drawChainText = function(canvas, i) {
  * are scheduled.
  */
 Field.prototype.reScheduleUpdate = function() {
-    DEBUG_PRINT("Rescheduling field update...", 5);
+    DEBUG_PRINT("field " + this.index + ": " + "Rescheduling field update...", 5);
     var nextUpdateTime = this.getNextUpdateTime();
     if (nextUpdateTime == Infinity) {
-        DEBUG_PRINT("No update needed - field isn't changing", 5);
+        DEBUG_PRINT("field " + this.index + ": " + "No update needed - field isn't changing", 5);
         window.clearTimeout(this.nextUpdateTimeout);
         this.nextUpdate = undefined;
         this.nextUpdateTimeout = undefined;
@@ -258,11 +287,11 @@ Field.prototype.reScheduleUpdate = function() {
                 this, nextUpdateTime);
         this.nextUpdateTimeout = setTimeout(this.nextUpdate.process,
                 nextUpdateTime - (new Date()).getTime());
-        DEBUG_PRINT("Rescheduled next field update.", 5);
+        DEBUG_PRINT("field " + this.index + ": " + "Rescheduled next field update.", 5);
     } else {
         nextUpdateTime = this.nextUpdate.time;
     }
-    DEBUG_PRINT("Next update at " + nextUpdateTime, 5);
+    DEBUG_PRINT("field " + this.index + ": " + "Next update at " + nextUpdateTime, 5);
     return nextUpdateTime;
 };
 
@@ -281,20 +310,37 @@ Field.prototype.addAction = function(action) {
             break;
         }
         if(i < this.currentActionIndex) {
-            DEBUG_PRINT("Can't alter the past.", 3);
+            DEBUG_PRINT("field " + this.index + ": " + "Can't alter the past.", 3);
             return;
         }
     }
-    DEBUG_PRINT("Adding action " + action +
+    DEBUG_PRINT("field " + this.index + ": " + "Adding action " + action +
             " to action queue at position " + i, 3);
     this.actions.splice(i + 1, 0, action);
     window.setTimeout(action.process, action.time - (new Date()).getTime());
 };
 
 /*
+ * Generate new block.
+ */
+Field.prototype.initBlock = function(currentTime) {
+        var state = this.state;
+        // Update field state to currentTime to make sure the state represents
+        // the time of block spawn
+        DEBUG_PRINT("field " + this.index + ": " + "Update field state to the block spawn time.", 3);
+        this.updateState(currentTime);
+        state.time = currentTime;
+        // Shuffle the block type and create a new block
+        var blockType = blockTypes[randint(0, blockTypes.length - 1)];
+        DEBUG_PRINT("field " + this.index + ": " + "CreateNewBlock of type " + blockType, 2);
+        var puyoBlock = new PuyoBlock(blockType);
+        state.setBlock(puyoBlock); 
+};
+
+/*
  * Rotate the block to given rotation.
  * Return true/false whether or not the rotation succeeded.
- */
+ *i/
 Field.prototype.rotateBlock = function(rotation) {
     var fieldState = this.state;
     var block = fieldState.block;
@@ -326,13 +372,13 @@ Field.prototype.rotateBlock = function(rotation) {
                tiledPosition[1] >= 0 &&
                tiledPosition[1] < fieldState.size[1] ))
         {
-            DEBUG_PRINT("Collision with border - can't rotate", 3);
+            DEBUG_PRINT("field " + this.index + ": " + "Collision with border - can't rotate", 3);
             collided = true;
             break;
         }
         puyo = fieldState.getPuyoAt(tiledPosition[0], tiledPosition[1]);
         if(puyo) {
-            DEBUG_PRINT("Collision with puyo - can't rotate", 3);
+            DEBUG_PRINT("field " + this.index + ": " + "Collision with puyo - can't rotate", 3);
             collided = true;
             break;
         }
@@ -359,7 +405,7 @@ Field.prototype.rotateBlock = function(rotation) {
  * Return true/false whether or not the move succeeded
  */
 Field.prototype.moveBlock = function(position) {
-    DEBUG_PRINT("Moving block to " + position, 3);
+    DEBUG_PRINT("field " + this.index + ": " + "Moving block to " + position, 3);
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) { return false; }
@@ -390,13 +436,13 @@ Field.prototype.moveBlock = function(position) {
                tiledPosition[1] >= 0 &&
                tiledPosition[1] < fieldState.size[1] ))
         {
-            DEBUG_PRINT("Collision with border - can't move", 3);
+            DEBUG_PRINT("field " + this.index + ": " + "Collision with border - can't move", 3);
             collided = true;
             break;
         }
         puyo = fieldState.getPuyoAt(tiledPosition[0], tiledPosition[1]);
         if(puyo) {
-            DEBUG_PRINT("Collision with puyo - can't move", 3);
+            DEBUG_PRINT("field " + this.index + ": " + "Collision with puyo - can't move", 3);
             collided = true;
             break;
         }
@@ -418,11 +464,12 @@ Field.prototype.moveBlock = function(position) {
     return collided;
 };
 
+
 Field.prototype.tiltBlockRight = function() {
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) {
-        DEBUG_PRINT("No block to tilt.", 3);
+        DEBUG_PRINT("field " + this.index + ": " + "No block to tilt.", 3);
         return;
     }
     this.moveBlock([block.position[0] + 1, block.position[1]]);
@@ -432,7 +479,7 @@ Field.prototype.tiltBlockLeft = function() {
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) {
-        DEBUG_PRINT("No block to tilt.", 3);
+        DEBUG_PRINT("field " + this.index + ": " + "No block to tilt.", 3);
         return;
     }
     this.moveBlock([block.position[0] - 1, block.position[1]]);
@@ -477,6 +524,62 @@ Field.prototype.dropBlock = function() {
     return true;
 };
 
+/*
+ * Update fieldState(puyoPositions, trash generation to currentTime).
+ * Should be called every time a puyo moves to another tile. Updates
+ * are scheduled this way by field.reScheduleUpdate.
+ */
+Field.prototype.updateState = function(currentTime) {
+    var state = this.state;
+    this.updatePuyoPositions(currentTime);
+    this.updateTrash();
+    state.time = currentTime;
+};
+
+/*
+ * Generate amount of trash puyos indicated by state.trash - up to one row.
+ * (state.trash is filled from state.trashInStore by field.initBlock)
+ */
+Field.prototype.updateTrash = function() {
+    var state = this.state;
+    if(!state.trash) {
+        DEBUG_PRINT("field " + this.index + ": " + "No trash to add", 5);
+        return;
+    }
+    var numbers = new Array(state.size[0]);
+    var order = [];
+    var i;
+    for(i = 0; i < numbers.length; i++) {numbers[i] = i; }
+    while(numbers.length) {
+        order.push(numbers.pop(randint(0, numbers.length - 1)));
+    }
+    var iMax = Math.min(order.length, state.trash);
+    var trashAdded = 0;
+    DEBUG_PRINT("field " + this.index + ": " + "Adding trash: maxAmount: " + iMax +
+            ", columnOrder: " + order, 5);
+    for(i = 0; i < iMax; i++) {
+        if(state.getPuyoAt(order[i], 0)){ continue; }
+        var position = [order[i], 0];
+        var velocity = [CONFIG.puyoDropVelocityX, CONFIG.puyoDropVelocityY];
+        var puyo = new TrashPuyo(position, velocity);
+        state.setPuyoAt(order[i], 0, puyo);
+        trashAdded++;
+    }
+    state.trash -= trashAdded;
+    DEBUG_PRINT("field " + this.index + ": " + "Trash added: " + trashAdded + " Trash left: " + state.trash, 5);
+};
+
+
+
+/* 
+ * Helper function for field.updateState.
+ * calculates puyo movement between field.state.time and currentTime
+ * and updates puyo positions. This function doesn't update state.time
+ * and it should be updated to currentTime after all time dependent updates
+ * are done.
+ * Field state updates including updatePuyoPositions and state.time are handled
+ * by field.updateState.
+ */
 Field.prototype.updatePuyoPositions = function(currentTime) {
     var fieldState = this.state;
     var block = fieldState.block;
@@ -570,8 +673,6 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
         block.position = [ block.position[0] + block.velocity[0] * time_d,
                            block.position[1] + block.velocity[1] * time_d ];
     }
-    // Update the state timestamp
-    fieldState.time = currentTime;
 
 };
 
@@ -704,14 +805,44 @@ Field.prototype.getAdjacentPuyoSets = function() {
     return puyoSets;
 };
 
+Field.prototype.getPuyoSetsToPop = function() {
+        var i;
+        var puyoSets = this.getAdjacentPuyoSets();
+        var puyoSetsToPop = [];
+        for(i = 0; i < puyoSets.length; i++) {
+            if(puyoSets[i].length >= CONFIG.puyosInSet &&
+                    !puyoSets[i][0].isTrash()) {
+                puyoSetsToPop.push(puyoSets[i]);
+            }
+        }
+        return puyoSetsToPop;
+};
+
+Field.prototype.popPuyo = function(puyo) {
+    var fieldState = this.state;
+    var fieldWidth = fieldState.size[0];
+    var fieldHeight = fieldState.size[1];
+    //Destroy the puyo
+    var x = puyo.position[0];
+    var y = puyo.position[1];
+    fieldState.setPuyoAt(x, y, undefined);
+    //Destroy surrounding trash
+    var right, below, left, above;
+    if(x < fieldWidth - 1) { right = fieldState.getPuyoAt(x + 1, y); }
+    if(y < fieldHeight - 1) { below = fieldState.getPuyoAt(x, y + 1); }
+    if(x >= 1) { left = fieldState.getPuyoAt(x - 1, y); }
+    if(y >= 1) { above = fieldState.getPuyoAt(x, y - 1); }
+    if(right && right.isTrash()) { this.setPuyoAt(x + 1, y, undefined); }
+    if(below && below.isTrash()) { this.setPuyoAt(x, y + 1, undefined); }
+    if(left && left.isTrash()) { this.setPuyoAt(x - 1, y, undefined); }
+    if(above && above.isTrash()) { this.setPuyoAt(x, y - 1, undefined); } 
+};
+
 Field.prototype.popPuyoSets = function(puyoSets) {
     var fieldState = this.state;
     for(var i = 0; i < puyoSets.length; i++) {
         for(var j = 0; j < puyoSets[i].length; j++) {
-            var puyo = puyoSets[i][j];
-            var x = Math.floor(puyo.position[0]);
-            var y = Math.floor(puyo.position[1]);
-            fieldState.setPuyoAt(x, y, undefined);
+            this.popPuyo(puyoSets[i][j]);
         }
     }
 };
@@ -738,7 +869,7 @@ Field.prototype.dropPuyos = function() {
 
 Field.prototype.createChain = function(currentTime, chainCount) {
     var patternIndex = randint(0, chains.length - 1);
-    DEBUG_PRINT("Creating chain of " + chainCount, 2,
+    DEBUG_PRINT("field " + this.index + ": " + "Creating chain of " + chainCount, 2,
                 "With pattern index " + patternIndex); 
     this.state.generateChain(chainCount, patternIndex);
     this.state.time = currentTime;

@@ -1,5 +1,5 @@
 CONFIG = window.CONFIG || {};
-CONFIG.debug = 3;
+CONFIG.debug = 5;
 
 CONFIG.puyoWidth = 40;
 CONFIG.puyoHeight = 40;
@@ -24,7 +24,10 @@ CONFIG.blockSpawnY = 2.5;
 CONFIG.puyoColorCount = 4;
 CONFIG.puyoPopDelay = 0.2;
 CONFIG.puyoDropDelay = 0.2;
-CONFIG.blockCreateDelay = 0.2;
+CONFIG.blockInitDelay = 0.2;
+
+CONFIG.puyosInSet = 4;
+CONFIG.maxTrashDrop = 18;
 
 // An insignificantly small amount of time that can be added to time values
 // to compensate for inaccuracies in various calculations.

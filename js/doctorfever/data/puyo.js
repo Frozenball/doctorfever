@@ -44,13 +44,25 @@ puyoTypes.nuisance  = new TrashPuyoType();
 function Puyo(type, position, velocity) {
     // [x, y], position on the field, unit=tiles.
     this.position = position || [0, 0];
-
     // one of puyo types defined in data/puyo.js
     this.type = type || coloredPuyos[0];
-
     // [x, y], velocity/speed, unit=tiles/s
-    this.velocity = velocity || [puyoFallVelocityX, puyoFallVelocityY];
+    this.velocity = velocity ||
+        [CONFIG.puyoDropVelocityX, CONFIG.puyoDropVelocityY];
 }
+
+/*
+ * Return true/false whether or not the puyo is of trash type
+ */
+Puyo.prototype.isTrash = function() {
+    return this.type == puyoTypes.nuisance;
+};
+
+function TrashPuyo(position, velocity) {
+    var puyo = new Puyo(puyoTypes.nuisance, position, velocity);
+    return puyo;
+}
+
 /*
  * Draw puyo on given canvas context
  * @param ctx canvas context

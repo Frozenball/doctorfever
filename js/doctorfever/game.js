@@ -12,10 +12,10 @@ function Game(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.fields = [];
-    this.fields.push(new Field(game, [CONFIG.boardWidthTiles,
-                CONFIG.boardHeightTiles]));
-    this.fields.push(new Field(game, [CONFIG.boardWidthTiles,
-                CONFIG.boardHeightTiles]));
+    this.fields.push(new Field(this, [CONFIG.boardWidthTiles,
+                CONFIG.boardHeightTiles], 0));
+    this.fields.push(new Field(this, [CONFIG.boardWidthTiles,
+                CONFIG.boardHeightTiles], 1));
     
     this.initKeys();
 
