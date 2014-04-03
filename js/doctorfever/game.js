@@ -48,13 +48,13 @@ function Game(canvas) {
 
 Game.prototype.updateGraphics = function() {
     var me = this;
-    this.ctx.fillStyle = 'rgb(22, 22, 22)';
+    this.ctx.fillStyle = 'rgb(33, 33, 33)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.fields.forEach(function(field, i){
-        field.drawBoard(me, i);
+    this.fields.forEach(function(field){
+        field.drawBoard(me);
     });
-    this.fields.forEach(function(field, i){
-        field.drawChainText(me, i);
+    this.fields.forEach(function(field){
+        field.drawGfx(me);
     });
 };
 
@@ -102,6 +102,18 @@ Game.prototype.initKeys = function() {
             case 57:
                 window.setTimeout((new ActionCreateChain(game, game.fields[0],
                                 (new Date()).getTime(), key - 48)).process, 0);
+                break;
+            case 48:
+                window.setTimeout((new ActionCreateChain(game, game.fields[0],
+                                (new Date()).getTime(), 10)).process, 0);
+                break;
+            case 187: 
+                window.setTimeout((new ActionCreateChain(game, game.fields[0],
+                                (new Date()).getTime(), 11)).process, 0);
+                break;
+            case 219:
+                window.setTimeout((new ActionCreateChain(game, game.fields[0],
+                                (new Date()).getTime(), 12)).process, 0);
                 break;
         }
     };

@@ -11,7 +11,7 @@ CONFIG.boardWidth = CONFIG.boardWidthTiles * (CONFIG.puyoWidth + CONFIG.puyoPadd
 CONFIG.boardHeight = CONFIG.boardHeightTiles * (CONFIG.puyoHeight + CONFIG.puyoPaddingY);
 CONFIG.boardPaddingRight = 30;
 CONFIG.boardPaddingBottom = 30;
-CONFIG.boardPaddingLeft = 200;
+CONFIG.boardPaddingLeft = 150;
 CONFIG.boardPaddingTop = 30;
 
 CONFIG.puyoFallVelocityX = 0;
@@ -28,7 +28,9 @@ CONFIG.blockInitDelay = 0.2;
 
 CONFIG.puyosInSet = 4;
 CONFIG.maxTrashDrop = 18;
-
+CONFIG.trashMeterLvl1 = 10;
+CONFIG.trashMeterLvl2 = 50;
+CONFIG.trashMeterLvl3 = 250;
 // An insignificantly small amount of time that can be added to time values
 // to compensate for inaccuracies in various calculations.
 CONFIG.planckTime = 0.01;

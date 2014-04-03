@@ -137,52 +137,115 @@ function Field(game, size, index) {
     }
 }
 
-/*
- * Draw puyos on the field to the given canvas. i defines the index and
- * positioning of the field.
- */
-Field.prototype.drawBoard = function(canvas) {
-    var i = this.index;
-    for (var x = 0; x < this.state.size[0]; x++) {
-        var puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
-        var puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
-        var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
-        var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
-                             CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
-        var boardOffset = [ (i + 1) * boardPadding[0] +
-                            i * boardSize[0] +
-                            i * boardPadding[2],
-                            boardPadding[1]];
-        for (var y = 0; y < this.state.size[1]; y++) {
-            var puyo = this.state.getPuyoAt(x, y);
-            if (puyo) {
-                puyo.draw(
-                    canvas.ctx,
-                    x * (puyoSize[0] + puyoPadding[0]) + boardOffset[0],
-                    y * (puyoSize[1] + puyoPadding[1]) + boardOffset[1],
-                    puyoSize
-                );
-            }
-        }
-    }
-};
 
 Field.prototype.getGfxData = function(canvas) {
     var i = this.index;
     if(canvas.fieldsGfx === undefined) { canvas.fieldsGfx = {}; }
     if(canvas.fieldsGfx[i] === undefined) {
         canvas.fieldsGfx[i] = {};
-        fieldGfx = canvas.fieldsGfx[i];
-        fieldGfx.score = 0;
-        fieldGfx.counter = 0;
-        fieldGfx.lastScore = 0;
-        fieldGfx.scoreDisp = 0;
-        fieldGfx.scoreAnimBegin = 0;
-        fieldGfx.chainOver = true;
-        fieldGfx.reset = true;
+        gfx = canvas.fieldsGfx[i];
+        gfx.score = 0;
+        gfx.counter = 0;
+        gfx.lastScore = 0;
+        gfx.scoreDisp = 0;
+        gfx.scoreAnimBegin = 0;
+        gfx.chainOver = true;
+        gfx.reset = true;
+        gfx.puyoSize = [CONFIG.puyoWidth, CONFIG.puyoHeight];
+        gfx.puyoPadding = [CONFIG.puyoPaddingX, CONFIG.puyoPaddingY];
+        gfx.boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
+        gfx.boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
+                             CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
+        gfx.boardOffset = [ (i + 1) * gfx.boardPadding[0] +
+                            i * gfx.boardSize[0] +
+                            i * gfx.boardPadding[2],
+                            gfx.boardPadding[1]];
     }
-    var fieldGfx = canvas.fieldsGfx[i];
-    return fieldGfx;
+    var gfx = canvas.fieldsGfx[i];
+    return gfx;
+};
+
+/*
+ * Draw puyos on the field to the given canvas. i defines the index and
+ * positioning of the field.
+ */
+Field.prototype.drawBoard = function(canvas) {
+    var i = this.index;
+    var gfx = this.getGfxData(canvas);
+    for (var x = 0; x < this.state.size[0]; x++) {
+        for (var y = 0; y < this.state.size[1]; y++) {
+            var puyo = this.state.getPuyoAt(x, y);
+            if (puyo) {
+                puyo.draw(
+                        canvas.ctx,
+                        x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
+                            gfx.boardOffset[0],
+                        y * (gfx.puyoSize[1] + gfx.puyoPadding[1]) +
+                            gfx.boardOffset[1],
+                        gfx.puyoSize
+                );
+            }
+        }
+    }
+};
+
+Field.prototype.drawGfx = function(canvas) {
+    this.drawTrashMeter(canvas);
+    this.drawChainText(canvas);
+};
+
+Field.prototype.drawTrashMeter = function(canvas) {
+    var f, g, h, x, y, w;
+    var ctx = canvas.ctx;
+    var gfx = this.getGfxData(canvas);
+    var state = this.state;
+    ctx.fillStyle = "#555555";
+    ctx.strokeStyle = "FF7700";
+    ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1],
+            gfx.boardSize[0], gfx.puyoSize[1]);
+    ctx.strokeRect(gfx.boardOffset[0], gfx.boardOffset[1],
+            gfx.boardSize[0], gfx.puyoSize[1]);
+    var barFillWidth = gfx.boardSize[0] - 10;
+    var barFillHeight = gfx.puyoSize[0] - 10;
+    var barFillOffsetX = gfx.boardOffset[0] + 5;
+    var barFillOffsetY = gfx.boardOffset[1] + 5;
+    f = Math.min(state.trashInStore / CONFIG.trashMeterLvl1, 1);
+    g = Math.min(state.trashInStore / CONFIG.trashMeterLvl2, 1);
+    h = Math.min(state.trashInStore / CONFIG.trashMeterLvl3, 1);
+    ctx.fillStyle = "#999999";
+    ctx.fillRect(barFillOffsetX, barFillOffsetY,
+            f * (barFillWidth), barFillHeight);
+    ctx.fillStyle = "#008888";
+    ctx.fillRect(barFillOffsetX, barFillOffsetY,
+            g * (barFillWidth), barFillHeight);
+    ctx.fillStyle = "#660066";
+    ctx.fillRect(barFillOffsetX, barFillOffsetY,
+            h * (barFillWidth), barFillHeight);
+    
+    var trash = new TrashPuyo();
+    gfx.trashMeterPuyos = gfx.trashMeterPuyos || [];
+    var trashMeterPuyoCount = Math.ceil(state.trashInStore /
+            CONFIG.trashMeterLvl1);
+    while(gfx.trashMeterPuyos.length > trashMeterPuyoCount) {
+        gfx.trashMeterPuyos.pop();
+    }
+    while(gfx.trashMeterPuyos.length < trashMeterPuyoCount) {
+        gfx.trashMeterPuyos.push([Math.random(), 0.0, 0.1]);
+    }
+    for(var i = 0; i < gfx.trashMeterPuyos.length; i++) {
+        d = gfx.trashMeterPuyos[i];
+        d[0] -= Math.random() / barFillWidth;
+        d[0] = (d[0] + 1) % 1;
+        d[1] += (Math.random() - 0.5) / 40;
+        d[1] = Math.min(Math.max(d[1], -0.02), 0.02);
+        d[2] += d[1];
+        d[2] = Math.max(Math.min(1.5, d[2]), 0.1);
+        x = barFillOffsetX + d[0] * barFillWidth - barFillHeight / 2;
+        y = barFillOffsetY + (1 - d[2]) * barFillHeight;
+        w = barFillHeight * d[2];
+        h = barFillHeight * d[2];
+        trash.draw(ctx, x, y, [w, h]);
+    }
 };
 
 /*
@@ -194,67 +257,62 @@ Field.prototype.drawChainText = function(canvas) {
     if(!this.chains) { return; }
     var chain = this.chains[this.chains.length - 1];
     
-    // Fetch some important values
-    var boardSize = [CONFIG.boardWidth, CONFIG.boardHeight];
-    var boardPadding = [ CONFIG.boardPaddingRight, CONFIG.boardPaddingBottom,
-                         CONFIG.boardPaddingLeft, CONFIG.boardPaddingTop ];
-    var boardOffset = [ (i + 1) * boardPadding[0] + i * boardSize[0] +
-        i * boardPadding[2], boardPadding[1]];
-    var boardCenter = [ boardOffset[0] + boardSize[0] / 2,
-                        boardOffset[1] + boardSize[1] / 2 ]; 
-
     var ctx = canvas.ctx;
+    var gfx = this.getGfxData(canvas);
+    
+    var boardCenter = [ gfx.boardOffset[0] + gfx.boardSize[0] / 2,
+                        gfx.boardOffset[1] + gfx.boardSize[1] / 2 ]; 
+
     
     var counter = chain.sets.length;
     var score = chain.score;
    
     // Cool animation stuff...
     var t = (new Date()).getTime();
-    var fieldGfx = this.getGfxData(canvas);
-    if(fieldGfx.counter < counter)
+    if(gfx.counter < counter)
     {
-        fieldGfx.lastScore = fieldGfx.score;
-        fieldGfx.score = score;
-        fieldGfx.scoreDisp = 0;
-        fieldGfx.counter = counter;
-        fieldGfx.chainOver = false;
-        fieldGfx.scoreAnimBegin = t;
-        fieldGfx.reset = false;
-    } else if(fieldGfx.chainOver && counter > 0)
+        gfx.lastScore = gfx.score;
+        gfx.score = score;
+        gfx.scoreDisp = 0;
+        gfx.counter = counter;
+        gfx.chainOver = false;
+        gfx.scoreAnimBegin = t;
+        gfx.reset = false;
+    } else if(gfx.chainOver && counter > 0)
     {
-        fieldGfx.lastScore = 0;
-        fieldGfx.score = score;
-        fieldGfx.scoreDisp = 0;
-        fieldGfx.counter = counter;
-        fieldGfx.ChainOver = false;
-        fieldGfx.scoreAnimBegin = t;
-        fieldGfx.reset = false;
-    } else if(!fieldGfx.reset && fieldGfx.chainOver &&
-            t - fieldGfx.scoreAnimBegin > 3000)
+        gfx.lastScore = 0;
+        gfx.score = score;
+        gfx.scoreDisp = 0;
+        gfx.counter = counter;
+        gfx.ChainOver = false;
+        gfx.scoreAnimBegin = t;
+        gfx.reset = false;
+    } else if(!gfx.reset && gfx.chainOver &&
+            t - gfx.scoreAnimBegin > 3000)
     {
-        fieldGfx.lastScore = 0;
-        fieldGfx.score = 0;
-        fieldGfx.scoreDisp = 0;
-        fieldGfx.counter = 0;
-        fieldGfx.scoreAnimBegin = 0;
-        fieldGfx.reset = true;
+        gfx.lastScore = 0;
+        gfx.score = 0;
+        gfx.scoreDisp = 0;
+        gfx.counter = 0;
+        gfx.scoreAnimBegin = 0;
+        gfx.reset = true;
         return;
-    } else if(fieldGfx.reset && fieldGfx.chainOver)
+    } else if(gfx.reset && gfx.chainOver)
     {
         return;
     }
-    if(fieldGfx.counter > counter) { fieldGfx.chainOver = true; }
+    if(gfx.counter > counter) { gfx.chainOver = true; }
 
-    var f = Math.min((t - fieldGfx.scoreAnimBegin) / 2000, 1);
+    var f = Math.min((t - gfx.scoreAnimBegin) / 2000, 1);
 
-    fieldGfx.scoreDisp = fieldGfx.lastScore + f * (fieldGfx.score - fieldGfx.lastScore);
-    fieldGfx.scoreDisp = Math.floor(fieldGfx.scoreDisp); 
+    gfx.scoreDisp = gfx.lastScore + f * (gfx.score - gfx.lastScore);
+    gfx.scoreDisp = Math.floor(gfx.scoreDisp); 
 
     // Draw the chain&score texts
-    var counterText = "Chain: " + fieldGfx.counter;
-    var scoreText = "Score: " + fieldGfx.scoreDisp; 
-    var fontF = Math.min(fieldGfx.scoreDisp / 300, 2) + 0.5;
-    ctx.font = Math.floor(fontF * 48) +"px Iceland";
+    var counterText = "Chain: " + gfx.counter;
+    var scoreText = "Score: " + gfx.scoreDisp; 
+    var fontF = Math.min(gfx.scoreDisp / 300, 2) + 0.5;
+    ctx.font = Math.floor(fontF * 44) +"px Iceland";
     ctx.fillStyle = "#FF00FF";
     var counterDim = stringDimensions(counterText, ctx.font);
     var counterPos = [ boardCenter[0] - counterDim[0] / 2,
