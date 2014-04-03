@@ -14,8 +14,8 @@ function stringDimensions(string, font) {
 }
 
 function DEBUG_PRINT(text, level) {
-    var d = new Date();
-    if (CONFIG.debug >= level || level === undefined) {
+    if (CONFIG.debug && (CONFIG.debug >= level || level === undefined)) {
+        var d = new Date();
         console.log("[" + Math.floor(d.getTime()) + "] " + text);
     }
 }

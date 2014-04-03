@@ -13,7 +13,7 @@ function FieldState(size, stateTime) {
     // trash in store is moved to trash on block init(if trashDrop is set)
     this.trashInStore = 0;
     this.trash = 0;
-    // Indicates whether or no trash drop is incoming()
+    // Indicates whether or no trash drop is incoming
     this.trashDrop = true;
     // Point of time this state represents
     this.time = stateTime || (new Date()).getTime();
@@ -310,12 +310,12 @@ Field.prototype.addAction = function(action) {
             break;
         }
         if(i < this.currentActionIndex) {
-            DEBUG_PRINT("field " + this.index + ": " + "Can't alter the past.", 3);
+            DEBUG_PRINT("field " + this.index + ": " + "Can't alter the past.", 5);
             return;
         }
     }
     DEBUG_PRINT("field " + this.index + ": " + "Adding action " + action +
-            " to action queue at position " + i, 3);
+            " to action queue at position " + i, 5);
     this.actions.splice(i + 1, 0, action);
     window.setTimeout(action.process, action.time - (new Date()).getTime());
 };
@@ -327,12 +327,12 @@ Field.prototype.initBlock = function(currentTime) {
         var state = this.state;
         // Update field state to currentTime to make sure the state represents
         // the time of block spawn
-        DEBUG_PRINT("field " + this.index + ": " + "Update field state to the block spawn time.", 3);
+        DEBUG_PRINT("field " + this.index + ": " + "Update field state to the block spawn time.", 5);
         this.updateState(currentTime);
         state.time = currentTime;
         // Shuffle the block type and create a new block
         var blockType = blockTypes[randint(0, blockTypes.length - 1)];
-        DEBUG_PRINT("field " + this.index + ": " + "CreateNewBlock of type " + blockType, 2);
+        DEBUG_PRINT("field " + this.index + ": " + "CreateNewBlock of type " + blockType, 4);
         var puyoBlock = new PuyoBlock(blockType);
         state.setBlock(puyoBlock); 
 };
@@ -340,7 +340,7 @@ Field.prototype.initBlock = function(currentTime) {
 /*
  * Rotate the block to given rotation.
  * Return true/false whether or not the rotation succeeded.
- *i/
+ */
 Field.prototype.rotateBlock = function(rotation) {
     var fieldState = this.state;
     var block = fieldState.block;
@@ -391,13 +391,14 @@ Field.prototype.rotateBlock = function(rotation) {
     for(i = 0; i < block.puyos.length; i++) {
         puyo = block.puyos[i];
         puyoPosition = puyo.position;
+        this.movePuyo(puyo, puyo.position[0], puyo.position[1]);
         tiledPosition = [ Math.floor(puyoPosition[0]),
                               Math.floor(puyoPosition[1]) ];
         fieldState.setPuyoAt( tiledPosition[0],
                               tiledPosition[1],
                               puyo );
     }
-    return collided;
+    return !collided;
 };
 
 /*
@@ -405,7 +406,7 @@ Field.prototype.rotateBlock = function(rotation) {
  * Return true/false whether or not the move succeeded
  */
 Field.prototype.moveBlock = function(position) {
-    DEBUG_PRINT("field " + this.index + ": " + "Moving block to " + position, 3);
+    DEBUG_PRINT("field " + this.index + ": " + "Moving block to " + position, 4);
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) { return false; }
@@ -525,6 +526,48 @@ Field.prototype.dropBlock = function() {
 };
 
 /*
+ * Move puyo to new position
+ * Doesn't check for collision and simply overrides existing puyo in the new
+ * tile.
+ * Drops(sets to drop velocity) puyos above this one
+ */
+Field.prototype.movePuyo = function(puyo, x, y) {
+    var state = this.state;
+    var tiledPosition = [ Math.floor(puyo.position[0]),
+                          Math.floor(puyo.position[1]) ];
+    var newTiledPosition = [ Math.floor(x), Math.floor(y) ];
+    
+    puyo.position = [x, y];
+    
+    if( tiledPosition[0] == newTiledPosition[0] &&
+            tiledPosition[1] == newTiledPosition[1] )
+    {
+        return;
+    }
+
+    state.setPuyoAt(tiledPosition[0], tiledPosition[1], undefined);
+    state.setPuyoAt(x, y, puyo);
+    puyo.position = [x, y];
+    // Puyos to drop
+    var fallDirection = [ CONFIG.puyoDropVelocityX /
+                            Math.abs(CONFIG.puyoDropVelocityX) || 0,
+                          CONFIG.puyoDropVelocityY /
+                              Math.abs(CONFIG.puyoDropVelocityY) || 0];
+    var puyo1Y = tiledPosition[1] - fallDirection[1];
+    var puyo2X = tiledPosition[0] - fallDirection[0];
+    var puyo1 = puyo1Y >= 0 && puyo1Y < state.size[1] &&
+        state.getPuyoAt(tiledPosition[0], puyo1Y);
+    var puyo2 = puyo2X >= 0 && puyo2X < state.size[0] &&
+        state.getPuyoAt(puyo2X, tiledPosition[1]);
+    if(puyo1 && puyo1 != puyo && !puyo1.velocity[1]) {
+        puyo1.velocity[1] = CONFIG.puyoDropVelocityY;
+    }
+    if(puyo2 && puyo2 != puyo && !puyo2.velocity[0]) {
+        puyo2.velocity[0] = CONFIG.puyoDropVelocityX;
+    }
+};
+
+/*
  * Update fieldState(puyoPositions, trash generation to currentTime).
  * Should be called every time a puyo moves to another tile. Updates
  * are scheduled this way by field.reScheduleUpdate.
@@ -598,16 +641,18 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
             if (!puyo) { continue; }
             var newPosition = [ puyo.position[0] + time_d * puyo.velocity[0],
                                 puyo.position[1] + time_d * puyo.velocity[1] ];
-            var TilePosition = [ Math.floor(puyo.position[0]),
+            var tilePosition = [ Math.floor(puyo.position[0]),
                                  Math.floor(puyo.position[1]) ];
             var newTilePosition = [ Math.floor(newPosition[0]),
                                     Math.floor(newPosition[1]) ];
+            var direction = [ puyo.velocity[0] / Math.abs(puyo.velocity[0]) || 0,
+                              puyo.velocity[1] / Math.abs(puyo.velocity[1]) || 0 ];
             var collidedHorizontal = false;
             var collidedVertical = false;
            
             // Check if the puyo has moved to another tile
-            if ( TilePosition[0] != newTilePosition[0] ||
-                 TilePosition[1] != newTilePosition[1] )
+            if ( tilePosition[0] != newTilePosition[0] ||
+                 tilePosition[1] != newTilePosition[1] )
             {
                 // Check if collided in either, border of the field or another
                 // puyo
@@ -618,54 +663,36 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
                     newTilePosition[1] >= fieldState.size[1] ||
                     newTilePosition[1] < 0;
                 collidedHorizontal = collidedHorizontal ||
-                    (newTilePosition[0] != TilePosition[0] &&
+                    (newTilePosition[0] != tilePosition[0] &&
                      fieldState.getPuyoAt( newTilePosition[0],
-                                           TilePosition[1] ));
+                                           tilePosition[1] ));
                 collidedVertical = collidedVertical ||
-                    (newTilePosition[1] != TilePosition[1] &&
-                     fieldState.getPuyoAt( TilePosition[0],
+                    (newTilePosition[1] != tilePosition[1] &&
+                     fieldState.getPuyoAt( tilePosition[0],
                                            newTilePosition[1] ));
                 
-                // If not collided and moved to another tile, update state
-                // puyo grid
-                if(!(collidedVertical || collidedHorizontal)) {
-                    fieldState.setPuyoAt(
-                        TilePosition[0],
-                        TilePosition[1],
-                        undefined);
-                    fieldState.setPuyoAt(
-                        newTilePosition[0],
-                        newTilePosition[1],
-                        puyo);
-                }
-
             }
+
+            // If collided set position to the edge of the tile
+            if(collidedHorizontal) {
+                newPosition[0] = tilePosition[0] +
+                    direction[0] * (1 - CONFIG.planckWidth);
+            }
+            if(collidedVertical) {
+                newPosition[1] = tilePosition[1] +
+                    direction[1] * (1 - CONFIG.planckWidth);
+            }
+            // Move the puyo
+            this.movePuyo(puyo, newPosition[0], newPosition[1]);
             
-            // If not collided horizontally, update x position. Otherwise
-            // set horizontal velocity to 0 and set x position to the center
-            // of current tile
-            if(!collidedHorizontal) {
-                puyo.position[0] = newPosition[0];
-            } else {
-                puyo.velocity[0] = 0;
-                puyo.position[0] = TilePosition[0] + 0.5;
+            // If collided puyo is contained in the block, release the block
+            if(collidedHorizontal || collidedVertical) {
+                puyo.velocity = [0, 0];
                 if(block && (block.puyos.indexOf(puyo) != -1)) {
                     fieldState.setBlock(undefined);
                 }
+            }
 
-            }
-            // If not collided vertically, update y position. Otherwise set
-            // vertical velocity to 0 and set y position to the center
-            // of current tile
-            if (!collidedVertical) {
-                puyo.position[1] = newPosition[1];
-            } else {
-                puyo.velocity[1] = 0;
-                puyo.position[1] = TilePosition[1] + 0.5;
-                if(block && (block.puyos.indexOf(puyo) != -1)) {
-                    fieldState.setBlock(undefined);
-                }
-            }
         }
     }
     
@@ -822,20 +849,26 @@ Field.prototype.popPuyo = function(puyo) {
     var fieldState = this.state;
     var fieldWidth = fieldState.size[0];
     var fieldHeight = fieldState.size[1];
-    //Destroy the puyo
+    // Destroy the puyo
     var x = puyo.position[0];
     var y = puyo.position[1];
     fieldState.setPuyoAt(x, y, undefined);
-    //Destroy surrounding trash
+    
     var right, below, left, above;
     if(x < fieldWidth - 1) { right = fieldState.getPuyoAt(x + 1, y); }
     if(y < fieldHeight - 1) { below = fieldState.getPuyoAt(x, y + 1); }
     if(x >= 1) { left = fieldState.getPuyoAt(x - 1, y); }
     if(y >= 1) { above = fieldState.getPuyoAt(x, y - 1); }
-    if(right && right.isTrash()) { this.setPuyoAt(x + 1, y, undefined); }
-    if(below && below.isTrash()) { this.setPuyoAt(x, y + 1, undefined); }
-    if(left && left.isTrash()) { this.setPuyoAt(x - 1, y, undefined); }
-    if(above && above.isTrash()) { this.setPuyoAt(x, y - 1, undefined); } 
+    // Drop above
+    if(above && !above.velocity[1]) {
+        above.velocity[1] = CONFIG.puyoDropVelocityY;
+    }
+    if(puyo.isTrash()) { return; }
+    // Destroy surrounding trash if current puyo isn't trash
+    if(right && right.isTrash()) { this.popPuyo(right); }
+    if(below && below.isTrash()) { this.popPuyo(below); }
+    if(left && left.isTrash()) { this.popPuyo(left); }
+    if(above && above.isTrash()) { this.popPuyo(above); }
 };
 
 Field.prototype.popPuyoSets = function(puyoSets) {
@@ -869,8 +902,8 @@ Field.prototype.dropPuyos = function() {
 
 Field.prototype.createChain = function(currentTime, chainCount) {
     var patternIndex = randint(0, chains.length - 1);
-    DEBUG_PRINT("field " + this.index + ": " + "Creating chain of " + chainCount, 2,
-                "With pattern index " + patternIndex); 
+    DEBUG_PRINT("field " + this.index + ": " + "Creating chain of " + chainCount +
+                " With pattern index " + patternIndex, 2); 
     this.state.generateChain(chainCount, patternIndex);
     this.state.time = currentTime;
 };

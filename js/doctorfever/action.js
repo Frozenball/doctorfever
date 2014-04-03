@@ -29,7 +29,7 @@ function ActionTiltBlockRight(game, field, currentTime) {
 function ActionTiltBlockLeft(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionTiltBlockRight...", 1);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionTiltBlockRight...");
         if(!field.tiltBlockLeft()) {
             DEBUG_PRINT("field " + field.index + ": " + "Unable to tilt the block", 2);
             return;
@@ -46,7 +46,7 @@ function ActionTiltBlockLeft(game, field, currentTime) {
 function ActionTurnBlockRight(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionTurnBlockRight...", 1);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionTurnBlockRight...");
         if(!field.turnBlockRight()) {
             DEBUG_PRINT("field " + field.index + ": " + "Unable to turn the block", 2);
             return;
@@ -63,7 +63,7 @@ function ActionTurnBlockRight(game, field, currentTime) {
 function ActionTurnBlockLeft(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionTurnBlockLeft...", 1);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionTurnBlockLeft...");
         if(!field.turnBlockLeft()) {
             DEBUG_PRINT("field " + field.index + ": " + "Unable to turn the block", 2);
             return;
@@ -79,7 +79,7 @@ function ActionTurnBlockLeft(game, field, currentTime) {
 function ActionDropBlock(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionDropBlock...", 1);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionDropBlock...");
         if(!field.dropBlock()) {
             DEBUG_PRINT("field " + field.index + ": " + "Unable to drop the block", 2);
             return;
@@ -91,7 +91,7 @@ function ActionDropBlock(game, field, currentTime) {
         // if puyos needs to be popped/destroyed.
         var nextUpdateTime = field.reScheduleUpdate();
         if(nextUpdateTime == Infinity) {
-            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 2);
+            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 3);
             var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
             var actionPopPuyos = new ActionPopPuyos(game, field,
                     puyoPopTime);
@@ -108,16 +108,16 @@ function ActionInitBlock(game, field, currentTime) {
     var action = new Action(currentTime);
 
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionInitBlock...", 4);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionInitBlock...", 2);
         if(field.state.trashDrop && field.state.trashInStore) {
             //Drop trash
-            DEBUG_PRINT("field " + field.index + ": " + "DropTrash", 4);
+            DEBUG_PRINT("field " + field.index + ": " + "DropTrash", 3);
             field.state.trashDrop = false; // No trash drop next time
             var actionDropTrash = new ActionDropTrash(game, field, currentTime);
             field.addAction(actionDropTrash);
         } else {
             //Create block
-            DEBUG_PRINT("field " + field.index + ": " + "CreateBlock", 4);
+            DEBUG_PRINT("field " + field.index + ": " + "CreateBlock", 3);
             field.state.trashDrop = true; // Drop trash next time
             var actionCreateBlock = new ActionCreateNewBlock(game, field,
                     currentTime);
@@ -131,7 +131,7 @@ function ActionDropTrash(game, field, currentTime) {
     var action = new Action(currentTime);
 
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionDropTrash...", 4);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionDropTrash...", 2);
         var trashToDrop = Math.min(CONFIG.maxTrashDrop,
                 field.state.trashInStore); 
         DEBUG_PRINT("field " + field.index + ": " + "Dropping " + trashToDrop + " trash");
@@ -144,7 +144,7 @@ function ActionDropTrash(game, field, currentTime) {
         // if puyos needs to be popped/destroyed.
         var nextUpdateTime = field.reScheduleUpdate();
         if(nextUpdateTime == Infinity) {
-            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 2);
+            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 3);
             var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
             var actionPopPuyos = new ActionPopPuyos(game, field,
                     puyoPopTime);
@@ -159,7 +159,7 @@ function ActionCreateNewBlock(game, field, currentTime) {
     var action = new Action(currentTime);
     
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionCreateNewBlock...");
+        DEBUG_PRINT("field " + field.index + ": " + "ActionCreateNewBlock...", 2);
         field.initBlock(currentTime);
         // Reschedule next field update if needed
 	// Alternatively, if the field is not updating (no puyos moving) and
@@ -167,7 +167,7 @@ function ActionCreateNewBlock(game, field, currentTime) {
         // if puyos needs to be popped/destroyed.
         var nextUpdateTime = field.reScheduleUpdate();
         if(nextUpdateTime == Infinity) {
-            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 2);
+            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 3);
             var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
             var actionPopPuyos = new ActionPopPuyos(game, field,
                     puyoPopTime);
@@ -179,45 +179,12 @@ function ActionCreateNewBlock(game, field, currentTime) {
 }
 
 /*
- * Set puyos in air to the drop velocity
- */
-function ActionDropPuyos(game, field, currentTime) {
-    var action = new Action(currentTime);
-    action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionDropPuyos...", 4);
-        // Set puyos to drop and update state's time to the drop time
-        field.dropPuyos();
-
-        // UPDATING STATE TIME THIS WAY MAY BE PROBLEM IN THE FUTURE...
-        // WE SHOULD FIRST MAKE SURE THE FIELD STATE REPRESENTS THE STATE
-        // AT currentTime.
-        // FOR THE TIME BEING, HOWEVER, THE STATE ISN'T CHANGING NOR ARE THE PUYOS
-        // MOVING SO IT'S OK TO JUST CHANGE THE TIMESTAMP
-        field.state.time = currentTime;
-        
-        // Reschedule next field update if needed 
-        // Alternatively, if the field is not updating (no puyos moving) and
-        // therefore next update is at Infinity, schedule an action to check
-        // if puyos needs to be popped/destroyed.
-        var nextUpdateTime = field.reScheduleUpdate();
-        if(nextUpdateTime == Infinity) {
-            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 5);
-            var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
-            var actionPopPuyos = new ActionPopPuyos(game, field,
-                    puyoPopTime);
-            field.addAction(actionPopPuyos);
-        }
-    };
-    return action;
-}
-
-/*
  * Pop adjacent puyo sets if needed
  */
 function ActionPopPuyos(game, field, currentTime) {
     var action = new Action(currentTime);
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionPopPuyos...", 4);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionPopPuyos...", 3);
 
         //Find adjacent puyo sets and those of them that needs to be popped
         var puyoSetsToPop = field.getPuyoSetsToPop();
@@ -228,18 +195,27 @@ function ActionPopPuyos(game, field, currentTime) {
         if(puyoSetsToPop.length > 0) {
             
             // Puyo sets needs to be popped
-            DEBUG_PRINT("field " + field.index + ": " + "Popping " + puyoSetsToPop.length + "puyo sets", 5);
+            DEBUG_PRINT("field " + field.index + ": " + "Popping " + puyoSetsToPop.length + "puyo sets", 4);
             field.popPuyoSets(puyoSetsToPop);
             for(i = 0; i < puyoSetsToPop.length; i++) {
                 chain.addSets(puyoSetsToPop);
             }
-            DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo drop", 5);
-            var puyoDropTime = currentTime + CONFIG.puyoDropDelay * 1000;
-            var actionDropPuyos = new ActionDropPuyos(game, field,
-                    puyoDropTime);
-            field.addAction(actionDropPuyos);
-            return;
 
+            field.state.time = currentTime;
+            //field.updateState(currentTime);
+
+            // Reschedule next field update if needed 
+            // Alternatively, if the field is not updating (no puyos moving) and
+            // therefore next update is at Infinity, schedule an action to check
+            // if puyos needs to be popped/destroyed.
+            var nextUpdateTime = field.reScheduleUpdate();
+            if(nextUpdateTime == Infinity) {
+                DEBUG_PRINT("field " + field.index + ": " + "Schedule puyo pop", 4);
+                var puyoPopTime = currentTime + CONFIG.puyoPopDelay * 1000;
+                var actionPopPuyos = new ActionPopPuyos(game, field,
+                        puyoPopTime);
+                field.addAction(actionPopPuyos);
+            }
         } else {
         
             // No puyo sets to pop
@@ -250,7 +226,7 @@ function ActionPopPuyos(game, field, currentTime) {
                 var trashCount = chain.score / 20;
                 var fieldCount = game.fields.length;
                 DEBUG_PRINT("field " + field.index + ": " + "Adding total of " + trashCount +
-                        "trash to " + (fieldCount - 1) + " fields", 5);
+                        "trash to " + (fieldCount - 1) + " fields", 4);
                 for(i = 0; i < fieldCount; i++) {
                     if(game.fields[i] == field) {  continue; }
                     var actionAddTrash = new ActionAddTrash(game,
@@ -260,7 +236,7 @@ function ActionPopPuyos(game, field, currentTime) {
                 }
                 chains.push(new Chain());
             }
-            DEBUG_PRINT("field " + field.index + ": " + "Schedule block init");
+            DEBUG_PRINT("field " + field.index + ": " + "Schedule block init", 4);
             var actionInitBlock = new ActionInitBlock(game, field,
                     currentTime + CONFIG.blockInitDelay);
             field.addAction(actionInitBlock);
@@ -277,7 +253,7 @@ function ActionAddTrash(game, field, currentTime, amount) {
     var action = new Action(currentTime);
     
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionAddTrash...", 4);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionAddTrash...", 5);
         field.state.trashInStore += amount;
     };
 
@@ -296,7 +272,7 @@ function ActionUpdateFieldState(game, field, currentTime) {
     var action = new Action(currentTime);
     
     action.process = function() {
-        DEBUG_PRINT("field " + field.index + ": " + "ActionUpdateFieldState...", 4);
+        DEBUG_PRINT("field " + field.index + ": " + "ActionUpdateFieldState...", 5);
         // Update puyo positions on given fieldState
         field.updateState(currentTime);
         // Reschedule next field update if needed
