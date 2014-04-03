@@ -9,17 +9,17 @@ CONFIG.boardWidthTiles = 6;
 CONFIG.boardHeightTiles = 13;
 CONFIG.boardWidth = CONFIG.boardWidthTiles * (CONFIG.puyoWidth + CONFIG.puyoPaddingX);
 CONFIG.boardHeight = CONFIG.boardHeightTiles * (CONFIG.puyoHeight + CONFIG.puyoPaddingY);
-CONFIG.boardPaddingRight = 50;
+CONFIG.boardPaddingRight = 80;
 CONFIG.boardPaddingBottom = 30;
-CONFIG.boardPaddingLeft = 180;
+CONFIG.boardPaddingLeft = 100;
 CONFIG.boardPaddingTop = 30;
 
 CONFIG.puyoFallVelocityX = 0;
-CONFIG.puyoFallVelocityY = 3;
+CONFIG.puyoFallVelocityY = 2;
 CONFIG.puyoDropVelocityX = 0;
 CONFIG.puyoDropVelocityY = 10;
 CONFIG.blockSpawnX = 2.5;
-CONFIG.blockSpawnY = 2.5;
+CONFIG.blockSpawnY = 1.5;
 
 CONFIG.puyoColorCount = 4;
 CONFIG.puyoPopDelay = 0.5;

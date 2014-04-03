@@ -203,9 +203,9 @@ Field.prototype.drawBackground = function(canvas) {
     var r= 32;
     var g = 32;
     if(this.chains) {
-        b = this.chains[this.chains.length - 1].sets.length / 10 * 128;
-        r = this.chains[this.chains.length - 1].sets.length / 20 * 128;
-        g = 32;
+        b = this.chains[this.chains.length - 1].sets.length / 10 * 400;
+        r = this.chains[this.chains.length - 1].sets.length / 20 * 400;
+        g = 32 + this.chains[this.chains.length - 1].sets.length / 50 * 400;
     }
     var bgGradient = ctx.createLinearGradient(0, 0, gfx.boardSize[0], gfx.boardSize[1]);
     bgGradient.addColorStop(0, "rgb(" + 
