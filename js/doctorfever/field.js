@@ -780,7 +780,7 @@ Field.prototype.updateTrash = function() {
     var i;
     for(i = 0; i < numbers.length; i++) {numbers[i] = i; }
     while(numbers.length) {
-        order.push(numbers.pop(randint(0, numbers.length - 1)));
+        order.push(numbers.splice(randint(0, numbers.length - 1), 1)[0]);
     }
     var iMax = Math.min(order.length, state.trash);
     var trashAdded = 0;
