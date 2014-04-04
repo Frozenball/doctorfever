@@ -98,19 +98,19 @@ Puyo.prototype.draw = function(ctx, x, y, size) {
  */
 blockTypes = [];
 blockTypes.push({
-    'blocks': [[[0, -1], [0, 0]]],
+    'blocks': [[[0.5, -0.5], [0.5, 0.5]]],
     'rotation': true
 });
 blockTypes.push({
-    'blocks': [[[0, -1], [0,0]], [[1, 0]]],
+    'blocks': [[[-0.5, -0.5], [0.5,-0.5]], [[0.5, 0.5]]],
     'rotation': true
 });
 blockTypes.push({
-    'blocks': [[[0, 0], [1, 0], [0, 1], [1, 1]]],
+    'blocks': [[[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]]],
     'rotation': 'color'
 });
 blockTypes.push({
-    'blocks': [[[0, -1], [0, 0]]],
+    'blocks': [[[0.5, -0.5], [0.5, 0.5]]],
     'rotation': true
 });
 /*

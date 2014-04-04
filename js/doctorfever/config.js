@@ -18,8 +18,8 @@ CONFIG.puyoFallVelocityX = 0;
 CONFIG.puyoFallVelocityY = 2;
 CONFIG.puyoDropVelocityX = 0;
 CONFIG.puyoDropVelocityY = 20;
-CONFIG.blockSpawnX = 2.5;
-CONFIG.blockSpawnY = 1.5;
+CONFIG.blockSpawnX = 3;
+CONFIG.blockSpawnY = 2;
 
 CONFIG.puyoColorCount = 4;
 CONFIG.puyoPopDelay = 0.5;
