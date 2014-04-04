@@ -476,7 +476,7 @@ Field.prototype.rotateBlock = function(rotation) {
     } else {
         return true;
     }
-}
+};
 
 Field.prototype._rotateBlock = function(rotation) {
     if (rotation === undefined) {
@@ -653,7 +653,7 @@ Field.prototype.turnBlock = function(i) {
     var block = fieldState.block;
     if(!block) { return false; }
     return this.rotateBlock(block.rotation + i);
-}
+};
 
 /*
  * Drop the block

@@ -193,10 +193,11 @@ PuyoBlock.prototype.setPosition = function(position) {
  * Doesn't update field's puyo grid.
  */
 PuyoBlock.prototype.setRotation = function(rotation) {
+    var i;
 
     if (this.blockType.rotation === false) return;
     else if (this.blockType.rotation === 'color') {
-        for(var i = 0; i < this.puyos.length; i++) {
+        for(i = 0; i < this.puyos.length; i++) {
             var oldColorIndex = coloredPuyos.indexOf(this.puyos[i].type);
             var newColorIndex = (oldColorIndex+1)%CONFIG.puyoColorCount;
             this.puyos[i].type = coloredPuyos[newColorIndex];
@@ -206,7 +207,7 @@ PuyoBlock.prototype.setRotation = function(rotation) {
     }
     
     this.rotation = rotation;
-    for(var i = 0; i < this.puyos.length; i++) {
+    for(i = 0; i < this.puyos.length; i++) {
         var x0 = this.originalPositions[i][0];
         var y0 = this.originalPositions[i][1];
         var a = Math.PI / 2 * this.rotation;
