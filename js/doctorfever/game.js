@@ -53,8 +53,8 @@ Game.prototype.updateGraphics = function() {
     this.ctx.drawImage(Assets.gamebg, 0, 0);
 
     // Add two clouds
-    var time = Date.now()/15;
-    var time2 = Date.now()/15;
+    var time = Date.now()/5;
+    var time2 = Date.now()/5;
     this.ctx.drawImage(Assets.clouds1, (time % 1300), 0);    
     this.ctx.drawImage(Assets.clouds1, (time % 1300) - 1300, 0);  
     this.ctx.drawImage(Assets.clouds2, 0, (time2 % 1200)); 
