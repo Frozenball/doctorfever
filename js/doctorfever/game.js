@@ -49,11 +49,10 @@ function Game(canvas) {
 Game.prototype.updateGraphics = function() {
     var me = this;
 
-
-    this.ctx.fillStyle = 'rgb(33, 33, 33)';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Draw background
     this.ctx.drawImage(Assets.gamebg, 0, 0);
 
+    // Add two clouds
     var time = Date.now()/15;
     var time2 = Date.now()/15;
     this.ctx.drawImage(Assets.clouds1, (time % 1300), 0);    
