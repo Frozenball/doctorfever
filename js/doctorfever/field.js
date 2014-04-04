@@ -195,7 +195,7 @@ Field.prototype.drawGfx = function(canvas) {
 };
 
 Field.prototype.drawBackground = function(canvas) {
-    
+
     var ctx = canvas.ctx;
     var gfx = this.getGfxData(canvas);
     var state = this.state;
@@ -212,11 +212,11 @@ Field.prototype.drawBackground = function(canvas) {
     bgGradient.addColorStop(0, "rgba(" + 
                                 Math.ceil(r) + "," +
                                 Math.ceil(g) + "," +
-                                Math.ceil(b) + ", 0.6)");
+                                Math.ceil(b) + ", 0.3)");
     bgGradient.addColorStop(1, "rgba(" +
                                 Math.ceil(0.1 * r) +"," +
                                 Math.ceil(0.1 * g) + "," +
-                                Math.ceil(0.1 * b) + ", 0.6)");
+                                Math.ceil(0.1 * b) + ", 0.2)");
     ctx.fillStyle = bgGradient;
     ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
 
