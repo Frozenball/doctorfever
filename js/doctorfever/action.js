@@ -224,7 +224,7 @@ function ActionPopPuyos(game, field, currentTime) {
             if(!chain) {
                 chains.push(new Chain());
             } else if(chain.sets.length > 0) {
-                var trashCount = chain.score / 20;
+                var trashCount = chain.score / 10;
                 var fieldCount = game.fields.length;
                 DEBUG_PRINT("field " + field.index + ": " + "Adding total of " + trashCount +
                         "trash to " + (fieldCount - 1) + " fields", 4);

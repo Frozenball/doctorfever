@@ -104,11 +104,11 @@ Game.prototype.initKeys = function() {
                 fields[0].addAction(new ActionDropBlock(game, fields[0],
                             (new Date()).getTime()));
                 break;
-            case 17: // Ctrl 
+            case 189: // - 
                 fields[0].addAction(new ActionTurnBlockRight(game, fields[0],
                             (new Date()).getTime()));
                 break;
-	    case 16: // Shift
+	    case 190: // .
                 fields[0].addAction(new ActionTurnBlockLeft(game, fields[0],
                             (new Date()).getTime()));
                 break;
