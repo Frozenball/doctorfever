@@ -203,21 +203,24 @@ Field.prototype._drawPuyosOnTheFloor = function(canvas) {
         }
         return me.state.size[1];
     };
+    var getMaxOfPuyos = function(x) {
+        var y = 0;
+        for (var i = 0; i < puyos.length; i++) {
+            if (Math.floor(puyos[i].position[0]) == x) {
+                y = Math.max(y, puyos[i].position[1]);
+            }
+        }
+        return Math.floor(y);
+    };
 
     var gfx = this.getGfxData(canvas);
     // Draw small blocks
     if (this.state.block !== undefined) {
         var puyos = this.state.block.puyos;
-        var smallestY = (function(){
-            var y = Infinity;
-            for (var i = 0; i < puyos.length; i++) {
-                y = Math.min(y, puyos[i].position[1]);
-            }
-            return Math.floor(y);
-        })();
         for (var i = 0; i < puyos.length; i++) {
             var x = Math.floor(puyos[i].position[0]);
-            var y = getMinBottom(x) - ((Math.floor(puyos[i].position[1]) - smallestY)) - 1;
+            var np = getMaxOfPuyos(x) - Math.floor(puyos[i].position[1]);
+            var y = getMinBottom(x) - np - 1;
             puyos[i].draw(
                 canvas.ctx,
                 x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
