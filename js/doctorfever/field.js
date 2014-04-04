@@ -246,8 +246,12 @@ Field.prototype.drawBackground = function(canvas) {
                                 Math.ceil(0.1 * g) + "," +
                                 Math.ceil(0.1 * b) + ", 0.2)");
     ctx.fillStyle = bgGradient;
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 15; 
+    ctx.shadowOffsetY = 15;
     ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
-
+    ctx.shadowColor = 'none';
 };
 
 Field.prototype.drawTrashMeter = function(canvas) {
