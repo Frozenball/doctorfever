@@ -53,14 +53,27 @@ FieldState.prototype.getPuyoAt = function(x, y) {
  * @param block a PuyoBlock
  */
 FieldState.prototype.setBlock = function(block) {
-    if(!block) { this.block = block; return;}
+    if (!block) {
+        this.block = block;
+        return;
+    }
     var puyos = block.puyos;
     this.block = block;
+    for (var i = 0; i < puyos.length; i++) {
+        var puyo = puyos[i];
+        if (this.getPuyoAt(
+            Math.floor(puyo.position[0]),
+            Math.floor(puyo.position[1])
+        ) !== undefined) {
+            return false;
+        }
+    }
     for(var i = 0; i < puyos.length; i++) {
         var puyo = puyos[i];
         this.setPuyoAt(Math.floor(puyo.position[0]),
                 Math.floor(puyo.position[1]), puyos[i]);
     }
+    return true;
 };
 
 FieldState.prototype.generateChain = function(chainCount, patternIndex) {
@@ -126,6 +139,8 @@ function Field(game, size, index) {
     this.state = new FieldState(size);
     this.actions = [];
     this.currentActionIndex = 0;
+    this.gameover = false;
+    this.gameoverTimer = undefined;
     this.nextUpdate = undefined;
     this.nextUpdateTimeout = undefined;
     this.chains = [new Chain()];
@@ -171,7 +186,9 @@ Field.prototype.getGfxData = function(canvas) {
  * positioning of the field.
  */
 Field.prototype.drawBoard = function(canvas) {
-    this._drawPuyosOnTheFloor(canvas);
+    if (!this.gameover) {
+        this._drawPuyosOnTheFloor(canvas);
+    }
     this._drawBoardPuyos(canvas);
 };
 Field.prototype._drawBoardPuyos = function(canvas) {
@@ -180,6 +197,7 @@ Field.prototype._drawBoardPuyos = function(canvas) {
     for (var x = 0; x < this.state.size[0]; x++) {
         for (var y = 0; y < this.state.size[1]; y++) {
             var puyo = this.state.getPuyoAt(x, y);
+
             if (puyo) {
                 var newY = puyo.position[1] + puyo.velocity[1] * (Date.now() - this.state.time)/1000 - 1;
                 puyo.draw(
@@ -469,6 +487,10 @@ Field.prototype.reScheduleUpdate = function() {
 Field.prototype.addAction = function(action) {
     // Add the action to the actions array, indexed and sorted according to
     // the action time.
+    if (this.gameover === true) {
+        return;
+    }
+
     var i;
     for(i = this.actions.length - 1; i >= 0; i--  ) {
         if(this.actions[i].time <= action.time) {
@@ -499,7 +521,11 @@ Field.prototype.initBlock = function(currentTime) {
         var blockType = blockTypes[randint(0, blockTypes.length - 1)];
         DEBUG_PRINT("field " + this.index + ": " + "CreateNewBlock of type " + blockType, 4);
         var puyoBlock = new PuyoBlock(blockType);
-        state.setBlock(puyoBlock); 
+
+        if (!state.setBlock(puyoBlock)) {
+            this.gameover = true;
+            this.gameoverTimer = Date.now();
+        }
 };
 
 /*
