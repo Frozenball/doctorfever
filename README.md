@@ -1,4 +1,4 @@
 doctorfever
 ===========
 
-Puyo Puyo clone
+Puyo Puyo clone. To run: ````npm install```` and ````grunt````
