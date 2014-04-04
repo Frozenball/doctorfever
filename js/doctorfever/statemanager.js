@@ -15,9 +15,7 @@ StateManager.prototype.updateGraphics = function() {
     States[this.state].updateGraphics();
 };
 StateManager.prototype.selectState = function(new_state, data) {
-    if (CONFIG.debug) {
-        console.log('Switching to state', new_state);
-    }
+    console.log('Switching to state', new_state);
     if (!$('#state-'+this.state)[0]) {
         throw new Error("Old state not found");
     }

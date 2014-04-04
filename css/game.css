@@ -19,11 +19,19 @@ h1 {
     transition: opacity .5s ease-in-out;
 }
 
-#state-selectCharacter {
+#state-menu {
     background: #358ba0;
     background: linear-gradient(to bottom,  #358ba0 0%,#357e90 100%);
 }
-#state-selectCharacter h1 {
+#state-menu .biglink {
+    display:block;
+    padding: 40px;
+    font-size: 60px;
+    line-height: normal;
+    color: white;
+    font-family: 'Open Sans Condensed', sans-serif;
+}
+#state-menu h1 {
     color: rgb(220, 220, 220);
     margin-bottom: 30px;
     font-size: 35px;
@@ -31,19 +39,6 @@ h1 {
     text-align: center;
     padding-bottom: 15px;
     padding-top: 20px;
-}
-#state-selectCharacter .character {
-    height: 440px;
-    width: 139px;
-    background-size: 300%;
-    background-position: 200px 0px;
-    float: left;
-    margin-right: 1px;
-    opacity: 0.5;
-    transition: opacity .5s ease-in-out;
-}
-#state-selectCharacter .character:hover {
-    opacity: 1;
 }
 #state-loading {
     background: #356aa0;
