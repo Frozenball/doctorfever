@@ -180,7 +180,7 @@ Field.prototype.drawBoard = function(canvas) {
                 var newY = puyo.position[1] + puyo.velocity[1] * (Date.now() - this.state.time)/1000 - 1;
                 puyo.draw(
                         canvas.ctx,
-                        i * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
+                        x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
                             gfx.boardOffset[0],
                         newY * (gfx.puyoSize[1] + gfx.puyoPadding[1]) +
                             gfx.boardOffset[1],
