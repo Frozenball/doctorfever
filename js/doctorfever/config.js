@@ -17,12 +17,12 @@ CONFIG.boardPaddingTop = 30;
 CONFIG.puyoFallVelocityX = 0;
 CONFIG.puyoFallVelocityY = 2;
 CONFIG.puyoDropVelocityX = 0;
-CONFIG.puyoDropVelocityY = 20;
+CONFIG.puyoDropVelocityY = 40;
 CONFIG.blockSpawnX = 3;
 CONFIG.blockSpawnY = 2;
 
 CONFIG.puyoColorCount = 4;
-CONFIG.puyoPopDelay = 0.5;
+CONFIG.puyoPopDelay = 1.0;
 CONFIG.puyoDropDelay = 0.5;
 CONFIG.blockInitDelay = 0.2;
 

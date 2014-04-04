@@ -181,7 +181,8 @@ Field.prototype._drawBoardPuyos = function(canvas) {
         for (var y = 0; y < this.state.size[1]; y++) {
             var puyo = this.state.getPuyoAt(x, y);
             if (puyo) {
-                var newY = puyo.position[1] + puyo.velocity[1] * (Date.now() - this.state.time)/1000 - 1;
+                var t = (Date.now() - this.state.time) / 1000 - CONFIG.planckTime;
+                var newY = puyo.position[1] + puyo.velocity[1] * t - 1;
                 puyo.draw(
                         canvas.ctx,
                         x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
@@ -876,9 +877,10 @@ Field.prototype.updatePuyoPositions = function(currentTime) {
             
             // If collided puyo is contained in the block, release the block
             if(collidedHorizontal || collidedVertical) {
-                puyo.velocity = [0, 0];
                 if(block && (block.puyos.indexOf(puyo) != -1)) {
-                    fieldState.setBlock(undefined);
+                    this.dropBlock();
+                } else {
+                    puyo.velocity = [0, 0];
                 }
             }
 
