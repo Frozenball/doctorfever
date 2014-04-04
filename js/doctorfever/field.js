@@ -242,10 +242,10 @@ Field.prototype.drawTrashMeter = function(canvas) {
     ctx.fillStyle = "#999999";
     ctx.fillRect(barFillOffsetX, barFillOffsetY,
             f * (barFillWidth), barFillHeight);
-    ctx.fillStyle = "#008888";
+    ctx.fillStyle = "#005555";
     ctx.fillRect(barFillOffsetX, barFillOffsetY,
             g * (barFillWidth), barFillHeight);
-    ctx.fillStyle = "#660066";
+    ctx.fillStyle = "#330033";
     ctx.fillRect(barFillOffsetX, barFillOffsetY,
             h * (barFillWidth), barFillHeight);
     
