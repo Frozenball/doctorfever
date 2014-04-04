@@ -82,7 +82,7 @@ Game.prototype.updateGraphics = function() {
 
 Game.prototype.initKeys = function() {
     var game = this;
-    var field = this.fields[0];
+    var fields = this.fields;
     window.onkeydown = function(e) {
         var key;
         if(window.event) {
@@ -93,23 +93,44 @@ Game.prototype.initKeys = function() {
         DEBUG_PRINT("Key " + key + " pressed", 2);
         switch(key) {
             case 39: // Right
-                field.addAction(new ActionTiltBlockRight(game, field,
+                fields[0].addAction(new ActionTiltBlockRight(game, fields[0],
                             (new Date()).getTime()));
                 break;
             case 37: // Left
-                field.addAction(new ActionTiltBlockLeft(game, field,
+                fields[0].addAction(new ActionTiltBlockLeft(game, fields[0],
                             (new Date()).getTime()));
                 break;
             case 38: // Up
-                field.addAction(new ActionDropBlock(game, field,
+                fields[0].addAction(new ActionDropBlock(game, fields[0],
                             (new Date()).getTime()));
                 break;
-            case 88: // X
-                field.addAction(new ActionTurnBlockRight(game, field,
+            case 189: // - 
+                fields[0].addAction(new ActionTurnBlockRight(game, fields[0],
                             (new Date()).getTime()));
                 break;
-            case 90: // Z
-                field.addAction(new ActionTurnBlockLeft(game, field,
+	    case 190: // .
+                fields[0].addAction(new ActionTurnBlockLeft(game, fields[0],
+                            (new Date()).getTime()));
+                break;
+            
+	    case 70: // F
+                fields[1].addAction(new ActionTiltBlockRight(game, fields[1],
+                            (new Date()).getTime()));
+                break;
+            case 83: // S
+                fields[1].addAction(new ActionTiltBlockLeft(game, fields[1],
+                            (new Date()).getTime()));
+                break;
+            case 68: // D
+                fields[1].addAction(new ActionDropBlock(game, fields[1],
+                            (new Date()).getTime()));
+                break;
+            case 65: // A
+                fields[1].addAction(new ActionTurnBlockRight(game, fields[1],
+                            (new Date()).getTime()));
+                break;
+            case 81: // Q
+                fields[1].addAction(new ActionTurnBlockLeft(game, fields[1],
                             (new Date()).getTime()));
                 break;
 
