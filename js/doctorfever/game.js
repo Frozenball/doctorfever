@@ -53,6 +53,15 @@ Game.prototype.updateGraphics = function() {
     this.ctx.fillStyle = 'rgb(33, 33, 33)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.drawImage(Assets.gamebg, 0, 0);
+
+    var time = Date.now()/15;
+    var time2 = Date.now()/15;
+    this.ctx.drawImage(Assets.clouds1, (time % 1300), 0);    
+    this.ctx.drawImage(Assets.clouds1, (time % 1300) - 1300, 0);  
+    this.ctx.drawImage(Assets.clouds2, 0, (time2 % 1200)); 
+    this.ctx.drawImage(Assets.clouds2, 0, (time2 % 1200) - 1200); 
+
+
     this.fields.forEach(function(field){
         field.drawBackground(me);
     });

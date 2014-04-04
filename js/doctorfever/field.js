@@ -216,7 +216,7 @@ Field.prototype.drawBackground = function(canvas) {
     bgGradient.addColorStop(1, "rgba(" +
                                 Math.ceil(0.1 * r) +"," +
                                 Math.ceil(0.1 * g) + "," +
-                                Math.ceil(0.1 * b) + ", 0.5)");
+                                Math.ceil(0.1 * b) + ", 0.6)");
     ctx.fillStyle = bgGradient;
     ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
 
