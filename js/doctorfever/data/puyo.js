@@ -62,6 +62,7 @@ function TrashPuyo(position, velocity) {
     return puyo;
 }
 
+var CachedAssets = {};
 /*
  * Draw puyo on given canvas context
  * @param ctx canvas context
@@ -76,14 +77,39 @@ Puyo.prototype.draw = function(ctx, x, y, size) {
     if (x === undefined || y === undefined || size === undefined) {
         throw new Error('X, Y, SIZE is undefined.');
     }
-    var asset = Assets[this.type.assetName];
-    ctx.drawImage(
-        asset,
-        x,
-        y,
-        size[0],
-        size[1]
-    );
+    
+    // Round values just in case
+    x = Math.floor(x);
+    y = Math.floor(y);
+    size[0] = Math.round(size[0]);
+    size[1] = Math.round(size[1]);
+
+    // Cache the most commonly used puyo graphics
+    if (size[0] == CONFIG.puyoWidth || size[0] == CONFIG.puyoWidth/3) {
+        var key = this.type.assetName + ',' + size[0];
+        if (!(key in CachedAssets)) {
+            CachedAssets[key] = document.createElement('canvas');
+            CachedAssets[key].width = size[0];
+            CachedAssets[key].height = size[1];
+            CachedAssets[key].getContext('2d').drawImage(
+                Assets[this.type.assetName],
+                0,
+                0,
+                size[0],
+                size[1]
+            );
+            console.log('Created asset ',key);    
+        }
+        ctx.drawImage(CachedAssets[key], x, y);
+    } else {
+        ctx.drawImage(
+            Assets[this.type.assetName],
+            x,
+            y,
+            size[0],
+            size[1]
+        );
+    }
 };
 
 /* Block typed defines shape of a puyo block. A puyo block consists of puyos

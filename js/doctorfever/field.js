@@ -196,10 +196,10 @@ Field.prototype._drawBoardPuyos = function(canvas) {
 };
 Field.prototype._drawPuyosOnTheFloor = function(canvas) {
     var me = this;
-    var getMinBottom = function(x) {;
+    var getMinBottom = function(x) {
         for (var y = 0; y < me.state.size[1]; y++) {
             var puyo = me.state.getPuyoAt(x, y);
-            if (puyo && puyo.velocity[1] == 0) return y;
+            if (puyo && puyo.velocity[1] === 0) return y;
         }
         return me.state.size[1];
     };
