@@ -74,10 +74,10 @@ Puyo.prototype.draw = function(ctx, x, y, size) {
     if (Assets[this.type.assetName] === undefined) {
         throw new Error('Missing asset: '+this.type.assetName);
     }
+    if (x === undefined || y === undefined || size === undefined) {
+        throw new Error('X, Y, SIZE is undefined.');
+    }
     var asset = Assets[this.type.assetName];
-    size = typeof(size[0]) === 'number' ? size : [asset.clientWidth, asset.clientHeight];
-    x = typeof(x) === 'number' ? x : Math.floor(position[0]) * size[0];
-    y = typeof(y) === 'number' ? y : Math.floor(position[1]) * size[1];
     ctx.drawImage(
         asset,
         x,

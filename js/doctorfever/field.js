@@ -129,6 +129,7 @@ function Field(game, size, index) {
     this.nextUpdate = undefined;
     this.nextUpdateTimeout = undefined;
     this.chains = [new Chain()];
+    this.particlePuyos = [];
     var nextUpdateTime = this.getNextUpdateTime();
     if(nextUpdateTime < Infinity) {
         this.nextUpdate = new ActionUpdateFieldState(game, this, nextUpdateTime);
@@ -190,8 +191,34 @@ Field.prototype.drawBoard = function(canvas) {
 };
 
 Field.prototype.drawGfx = function(canvas) {
+    var gfx = this.getGfxData(canvas);
     this.drawTrashMeter(canvas);
     this.drawChainText(canvas);
+
+    this.particlePuyos.forEach(function(data, i){
+        var puyo = data[0];
+        var x = data[1];
+        var y = data[2];
+        var diff = Date.now() - data[3];
+        var pros = 1 - diff / 300;
+        if (puyo && pros > 0) {
+            var sizeFactor = pros;
+            var addY = -10 * Math.pow(0.5 + diff/100, 6) + 0.5*(0.5 + diff/100);
+            addY = 0;
+            var lol = gfx.puyoSize[0] * (1 - sizeFactor) * 0.5;
+            puyo.draw(
+                canvas.ctx,
+                lol + x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
+                    gfx.boardOffset[0],
+                lol + y * (gfx.puyoSize[1] + gfx.puyoPadding[1]) +
+                    gfx.boardOffset[1] + diff,
+                [
+                    gfx.puyoSize[0] * sizeFactor,
+                    gfx.puyoSize[1] * sizeFactor
+                ]
+            );
+        }
+    });
 };
 
 Field.prototype.drawBackground = function(canvas) {
@@ -939,6 +966,7 @@ Field.prototype.popPuyo = function(puyo) {
     // Destroy the puyo
     var x = puyo.position[0];
     var y = puyo.position[1];
+    this.particlePuyos.push([fieldState.getPuyoAt(x, y), Math.floor(x), Math.floor(y), Date.now()]);
     fieldState.setPuyoAt(x, y, undefined);
     
     var right, below, left, above;
