@@ -186,9 +186,7 @@ Field.prototype.getGfxData = function(canvas) {
  * positioning of the field.
  */
 Field.prototype.drawBoard = function(canvas) {
-    if (!this.gameover) {
-        this._drawPuyosOnTheFloor(canvas);
-    }
+    this._drawPuyosOnTheFloor(canvas);
     this._drawBoardPuyos(canvas);
 };
 Field.prototype._drawBoardPuyos = function(canvas) {
@@ -200,12 +198,26 @@ Field.prototype._drawBoardPuyos = function(canvas) {
 
             if (puyo) {
                 var newY = puyo.position[1] + puyo.velocity[1] * (Date.now() - this.state.time)/1000 - 1;
+                var newX = x;
+                var addX = 0;
+                var addY = 0;
+
+                if (this.gameover && puyo.effectPosition !== undefined) {
+                    addX = puyo.effectPosition[0];
+                    addY = puyo.effectPosition[1];
+                }
+                /*
+                if (this.gameover && this.gameoverBackground !== undefined) {
+                    addY += this.gameoverBackground.y;
+                }
+                */
+
                 puyo.draw(
                         canvas.ctx,
-                        x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
-                            gfx.boardOffset[0],
+                        newX * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
+                            gfx.boardOffset[0] + addX,
                         newY * (gfx.puyoSize[1] + gfx.puyoPadding[1]) +
-                            gfx.boardOffset[1],
+                            gfx.boardOffset[1] + addY,
                         gfx.puyoSize
                 );
             }
@@ -213,6 +225,9 @@ Field.prototype._drawBoardPuyos = function(canvas) {
     }
 };
 Field.prototype._drawPuyosOnTheFloor = function(canvas) {
+    if (this.gameover) {
+        return;
+    }
     var me = this;
     var getMinBottom = function(x) {
         for (var y = 0; y < me.state.size[1]; y++) {
@@ -252,6 +267,10 @@ Field.prototype._drawPuyosOnTheFloor = function(canvas) {
 };
 
 Field.prototype.drawGfx = function(canvas) {
+    if (this.gameover) {
+        return;
+    }
+
     var gfx = this.getGfxData(canvas);
     this.drawTrashMeter(canvas);
     this.drawChainText(canvas);
@@ -288,6 +307,45 @@ Field.prototype.drawGfx = function(canvas) {
 
 Field.prototype.drawBackground = function(canvas) {
 
+    if (this.gameover) {
+        if (this.gameoverBackground === undefined) {
+            this.gameoverBackground = {
+                angle: 0,
+                x: 0,
+                y: 0,
+                velocityX: randint(-2, 2),
+                velocityY: -3
+            }
+
+            for (var x = 0; x < this.state.size[0]; x++) {
+                for (var y = 0; y < this.state.size[1]; y++) {
+                    var puyo = this.state.getPuyoAt(x, y);
+                    if (puyo) {
+                        puyo.effectPosition = [0, 0];
+                        puyo.effectVelocity = [
+                            randint(-30, 30) / 10,
+                            randint(-30, 30) / 10
+                        ];
+                    }
+                }
+            }
+        }
+
+        for (var x = 0; x < this.state.size[0]; x++) {
+            for (var y = 0; y < this.state.size[1]; y++) {
+                var puyo = this.state.getPuyoAt(x, y);
+                if (puyo && puyo.effectVelocity !== undefined) {
+                    if (puyo.effectVelocity[0] === 0.0) {
+                        puyo.effectVelocity[0] += 0.1;
+                    }
+                    puyo.effectPosition[0] += puyo.effectVelocity[0];
+                    puyo.effectPosition[1] += puyo.effectVelocity[1];
+                }
+            }
+        }
+    }
+
+
     var ctx = canvas.ctx;
     var gfx = this.getGfxData(canvas);
     var state = this.state;
@@ -295,7 +353,7 @@ Field.prototype.drawBackground = function(canvas) {
     var b = 32;
     var r= 32;
     var g = 32;
-    if(this.chains) {
+    if (this.chains) {
         b = this.chains[this.chains.length - 1].sets.length / 10 * 400;
         r = this.chains[this.chains.length - 1].sets.length / 20 * 400;
         g = 32 + this.chains[this.chains.length - 1].sets.length / 50 * 400;
@@ -314,7 +372,20 @@ Field.prototype.drawBackground = function(canvas) {
     ctx.shadowBlur = 5;
     ctx.shadowOffsetX = 15; 
     ctx.shadowOffsetY = 15;
-    ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
+
+    if (this.gameover) {
+        this.gameoverBackground.x += this.gameoverBackground.velocityX;
+        this.gameoverBackground.y += this.gameoverBackground.velocityY;
+        this.gameoverBackground.angle += 3;
+        this.gameoverBackground.velocityY += 0.5;
+
+        //ctx.rotate((Math.PI / 180) * this.gameoverBackground.angle);
+        ctx.fillRect(gfx.boardOffset[0] + this.gameoverBackground.x, gfx.boardOffset[1] + this.gameoverBackground.y, gfx.boardSize[0], gfx.boardSize[1]);
+        //ctx.rotate(0);
+    } else {
+        ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
+    }
+
     ctx.shadowColor = 'none';
 };
 
