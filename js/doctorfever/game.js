@@ -9,6 +9,7 @@ function Game(canvas) {
         throw new Error('Canvas was not specified.');
     }
     var date = new Date();
+    this.startTime = Date.now();
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.fields = [];
@@ -48,7 +49,14 @@ function Game(canvas) {
 
 Game.prototype.updateGraphics = function() {
     var me = this;
+    
+    var t = (Date.now() - this.startTime) / 500;
 
+    var r = Math.floor(Math.max((t / 1280) * 128), 1);
+    var g = Math.floor(Math.max(0, (1 - t / 135) * 255));
+    var b = Math.floor(Math.abs(Math.min(t + 160, 480) % 320 - 160) / 160 * 255);
+    this.ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     // Draw background
     this.ctx.drawImage(Assets.gamebg, 0, 0);
 
