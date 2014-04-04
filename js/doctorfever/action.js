@@ -80,7 +80,8 @@ function ActionDropBlock(game, field, currentTime) {
     var action = new Action();
     action.process = function() {
         DEBUG_PRINT("field " + field.index + ": " + "ActionDropBlock...");
-        if(!field.dropBlock()) {
+        field.updateState(currentTime);
+	if(!field.dropBlock()) {
             DEBUG_PRINT("field " + field.index + ": " + "Unable to drop the block", 2);
             return;
         }
