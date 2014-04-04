@@ -465,6 +465,23 @@ Field.prototype.initBlock = function(currentTime) {
  * Return true/false whether or not the rotation succeeded.
  */
 Field.prototype.rotateBlock = function(rotation) {
+    if (!this._rotateBlock(rotation)) {
+        this.tiltBlockRight();
+        if (!this._rotateBlock(rotation)) {
+            this.tiltBlockLeft();
+            return this._rotateBlock(rotation);
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+Field.prototype._rotateBlock = function(rotation) {
+    if (rotation === undefined) {
+        throw new Error('Invalid rotateBlock value: ' + rotation);
+    }
     var fieldState = this.state;
     var block = fieldState.block;
     if(!block) { return false; }
@@ -529,6 +546,9 @@ Field.prototype.rotateBlock = function(rotation) {
  * Return true/false whether or not the move succeeded
  */
 Field.prototype.moveBlock = function(position) {
+    if (position === undefined || position[0] === undefined || position[1] === undefined) {
+        throw new Error('Undefined parameters in moveBlock');
+    }
     DEBUG_PRINT("field " + this.index + ": " + "Moving block to " + position, 4);
     var fieldState = this.state;
     var block = fieldState.block;
@@ -614,10 +634,7 @@ Field.prototype.tiltBlockLeft = function() {
  * Return true/false whether or not the turn succeeded
  */
 Field.prototype.turnBlockRight = function() {
-    var fieldState = this.state;
-    var block = fieldState.block;
-    if(!block) { return false; }
-    return this.rotateBlock(block.rotation + 1);
+    return this.turnBlock(1);
 };
 
 /*
@@ -625,11 +642,18 @@ Field.prototype.turnBlockRight = function() {
  * Return true/false whether or not the turn succeeded
  */
 Field.prototype.turnBlockLeft = function() {
+    return this.turnBlock(-1);
+};
+
+Field.prototype.turnBlock = function(i) {
+    if (i !== 1 && i !== -1) {
+        throw new Error('Rotating block called with wrong i.');
+    }
     var fieldState = this.state;
     var block = fieldState.block;
-    if(!block) { return false;}
-    return this.rotateBlock(block.rotation - 1);
-};
+    if(!block) { return false; }
+    return this.rotateBlock(block.rotation + i);
+}
 
 /*
  * Drop the block
