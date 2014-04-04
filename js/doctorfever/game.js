@@ -19,7 +19,7 @@ function Game(canvas) {
     
     this.initKeys();
 
-    //TEMPORARY TEST CODE
+    //TEMPORARY TEST CODEpda
     //this.fields[0].state.debugRandomize();
     //this.fields[1].state.debugRandomize();
     //this.fields[0].state.time = date.getTime();
@@ -48,8 +48,20 @@ function Game(canvas) {
 
 Game.prototype.updateGraphics = function() {
     var me = this;
+
+
     this.ctx.fillStyle = 'rgb(33, 33, 33)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(Assets.gamebg, 0, 0);
+
+    var time = Date.now()/15;
+    var time2 = Date.now()/15;
+    this.ctx.drawImage(Assets.clouds1, (time % 1300), 0);    
+    this.ctx.drawImage(Assets.clouds1, (time % 1300) - 1300, 0);  
+    this.ctx.drawImage(Assets.clouds2, 0, (time2 % 1200)); 
+    this.ctx.drawImage(Assets.clouds2, 0, (time2 % 1200) - 1200); 
+
+
     this.fields.forEach(function(field){
         field.drawBackground(me);
     });

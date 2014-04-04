@@ -195,6 +195,7 @@ Field.prototype.drawGfx = function(canvas) {
 };
 
 Field.prototype.drawBackground = function(canvas) {
+
     var ctx = canvas.ctx;
     var gfx = this.getGfxData(canvas);
     var state = this.state;
@@ -208,16 +209,17 @@ Field.prototype.drawBackground = function(canvas) {
         g = 32 + this.chains[this.chains.length - 1].sets.length / 50 * 400;
     }
     var bgGradient = ctx.createLinearGradient(0, 0, gfx.boardSize[0], gfx.boardSize[1]);
-    bgGradient.addColorStop(0, "rgb(" + 
+    bgGradient.addColorStop(0, "rgba(" + 
                                 Math.ceil(r) + "," +
                                 Math.ceil(g) + "," +
-                                Math.ceil(b) + ")");
-    bgGradient.addColorStop(1, "rgb(" +
+                                Math.ceil(b) + ", 0.3)");
+    bgGradient.addColorStop(1, "rgba(" +
                                 Math.ceil(0.1 * r) +"," +
                                 Math.ceil(0.1 * g) + "," +
-                                Math.ceil(0.1 * b) + ")");
+                                Math.ceil(0.1 * b) + ", 0.2)");
     ctx.fillStyle = bgGradient;
     ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
+
 };
 
 Field.prototype.drawTrashMeter = function(canvas) {
