@@ -108,12 +108,12 @@ Game.prototype.initKeys = function() {
                 fields[0].addAction(new ActionTurnBlockRight(game, fields[0],
                             (new Date()).getTime()));
                 break;
-	    case 190: // .
+        case 190: // .
                 fields[0].addAction(new ActionTurnBlockLeft(game, fields[0],
                             (new Date()).getTime()));
                 break;
             
-	    case 70: // F
+        case 70: // F
                 fields[1].addAction(new ActionTiltBlockRight(game, fields[1],
                             (new Date()).getTime()));
                 break;

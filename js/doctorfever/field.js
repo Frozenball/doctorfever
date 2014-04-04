@@ -57,10 +57,12 @@ FieldState.prototype.setBlock = function(block) {
         this.block = block;
         return;
     }
+    var i;
     var puyos = block.puyos;
+    var puyo;
     this.block = block;
-    for (var i = 0; i < puyos.length; i++) {
-        var puyo = puyos[i];
+    for (i = 0; i < puyos.length; i++) {
+        puyo = puyos[i];
         if (this.getPuyoAt(
             Math.floor(puyo.position[0]),
             Math.floor(puyo.position[1])
@@ -68,8 +70,8 @@ FieldState.prototype.setBlock = function(block) {
             return false;
         }
     }
-    for(var i = 0; i < puyos.length; i++) {
-        var puyo = puyos[i];
+    for (i = 0; i < puyos.length; i++) {
+        puyo = puyos[i];
         this.setPuyoAt(Math.floor(puyo.position[0]),
                 Math.floor(puyo.position[1]), puyos[i]);
     }
@@ -302,6 +304,7 @@ Field.prototype.drawGfx = function(canvas) {
 
 Field.prototype.drawBackground = function(canvas) {
 
+    var x, y, puyo;
     if (this.gameover) {
         if (this.gameoverBackground === undefined) {
             this.gameoverBackground = {
@@ -310,11 +313,11 @@ Field.prototype.drawBackground = function(canvas) {
                 y: 0,
                 velocityX: randint(-2, 2),
                 velocityY: -3
-            }
+            };
 
-            for (var x = 0; x < this.state.size[0]; x++) {
-                for (var y = 0; y < this.state.size[1]; y++) {
-                    var puyo = this.state.getPuyoAt(x, y);
+            for (x = 0; x < this.state.size[0]; x++) {
+                for (y = 0; y < this.state.size[1]; y++) {
+                    puyo = this.state.getPuyoAt(x, y);
                     if (puyo) {
                         puyo.effectPosition = [0, 0];
                         puyo.effectVelocity = [
@@ -326,9 +329,9 @@ Field.prototype.drawBackground = function(canvas) {
             }
         }
 
-        for (var x = 0; x < this.state.size[0]; x++) {
-            for (var y = 0; y < this.state.size[1]; y++) {
-                var puyo = this.state.getPuyoAt(x, y);
+        for (x = 0; x < this.state.size[0]; x++) {
+            for (y = 0; y < this.state.size[1]; y++) {
+                puyo = this.state.getPuyoAt(x, y);
                 if (puyo && puyo.effectVelocity !== undefined) {
                     if (puyo.effectVelocity[0] === 0.0) {
                         puyo.effectVelocity[0] += 0.1;
