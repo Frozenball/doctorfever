@@ -17,7 +17,7 @@ CONFIG.boardPaddingTop = 30;
 CONFIG.puyoFallVelocityX = 0;
 CONFIG.puyoFallVelocityY = 2;
 CONFIG.puyoDropVelocityX = 0;
-CONFIG.puyoDropVelocityY = 10;
+CONFIG.puyoDropVelocityY = 20;
 CONFIG.blockSpawnX = 2.5;
 CONFIG.blockSpawnY = 1.5;
 

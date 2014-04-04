@@ -33,7 +33,6 @@ puyoTypes.yellow    = coloredPuyos[3];
 puyoTypes.purple    = coloredPuyos[4];
 puyoTypes.nuisance  = new TrashPuyoType();
 
-
 /*
  * Constructor for Puyo
  * @param color one of puyo_colors defined in data/puyo.js
@@ -98,9 +97,31 @@ Puyo.prototype.draw = function(ctx, x, y, size) {
  * ]
  */
 blockTypes = [];
-blockTypes[0] = [[[0, -1], [0, 0]]];
-blockTypes[1] = [[[0, -1], [0,0]], [[1, 0]]];
-
+blockTypes.push({
+    'blocks': [[[0, -1], [0, 0]]],
+    'rotation': true
+});
+blockTypes.push({
+    'blocks': [[[0, -1], [0,0]], [[1, 0]]],
+    'rotation': true
+});
+blockTypes.push({
+    'blocks': [[[0, 0], [1, 0], [0, 1], [1, 1]]],
+    'rotation': 'color'
+});
+blockTypes.push({
+    'blocks': [[[0, -1], [0, 0]]],
+    'rotation': true
+});
+/*
+blockTypes.push({
+    'blocks': [
+        [[0, 0], [1, 0]],
+        [[0, 1], [1, 1]]
+    ],
+    'rotation': 'inplace'
+});
+*/
 
 /*
  * PuyoBlock constructor
@@ -118,17 +139,19 @@ function PuyoBlock(blockType, position, velocity) {
     this.rotation = 0; // 0, 1, 2 or 3
     this.velocity = velocity || [CONFIG.puyoFallVelocityX, CONFIG.puyoFallVelocityY];
     this.originalPositions = [];
+
+    var blockTypeBlocks = blockType.blocks;
     
     // Check the color count and array to store already used colors
-    if( blockType.length > CONFIG.puyoColorCount &&
-        blockType.length > coloredPuyos.length )
+    if( blockTypeBlocks.length > CONFIG.puyoColorCount &&
+        blockTypeBlocks.length > coloredPuyos.length )
     {
         throw new Error("Too many colors in a block");
     }
     var colorsUsed = new Array(CONFIG.puyoColorCount);
     
     // Iterate different puyo colors in the block type
-    for(var i = 0; i < blockType.length; i++) {
+    for(var i = 0; i < blockTypeBlocks.length; i++) {
      
         // Shuffle the color
         var color = randint(0, CONFIG.puyoColorCount);
@@ -138,8 +161,8 @@ function PuyoBlock(blockType, position, velocity) {
         colorsUsed[color] = true;
         
         // Create puyos of the color
-        for(var j = 0; j < blockType[i].length; j++) {
-            var pos = blockType[i][j];
+        for(var j = 0; j < blockTypeBlocks[i].length; j++) {
+            var pos = blockTypeBlocks[i][j];
             this.puyos.push( new Puyo(coloredPuyos[color],
                              [ this.position[0] + pos[0],
                                this.position[1] + pos[1] ],
@@ -170,6 +193,18 @@ PuyoBlock.prototype.setPosition = function(position) {
  * Doesn't update field's puyo grid.
  */
 PuyoBlock.prototype.setRotation = function(rotation) {
+
+    if (this.blockType.rotation === false) return;
+    else if (this.blockType.rotation === 'color') {
+        for(var i = 0; i < this.puyos.length; i++) {
+            var oldColorIndex = coloredPuyos.indexOf(this.puyos[i].type);
+            var newColorIndex = (oldColorIndex+1)%CONFIG.puyoColorCount;
+            this.puyos[i].type = coloredPuyos[newColorIndex];
+
+        }
+        return;
+    }
+    
     this.rotation = rotation;
     for(var i = 0; i < this.puyos.length; i++) {
         var x0 = this.originalPositions[i][0];
