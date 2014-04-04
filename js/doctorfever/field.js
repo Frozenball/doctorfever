@@ -196,7 +196,8 @@ Field.prototype.drawGfx = function(canvas) {
     this.drawTrashMeter(canvas);
     this.drawChainText(canvas);
 
-    this.particlePuyos.forEach(function(data, i){
+    for (var i=0; i<this.particlePuyos.length; i++) {
+        var data = this.particlePuyos[i];
         var puyo = data[0];
         var x = data[1];
         var y = data[2];
@@ -218,8 +219,11 @@ Field.prototype.drawGfx = function(canvas) {
                     gfx.puyoSize[1] * sizeFactor
                 ]
             );
+        } else {
+            this.particlePuyos.pop(i);
+            i--;
         }
-    });
+    }
 };
 
 Field.prototype.drawBackground = function(canvas) {
