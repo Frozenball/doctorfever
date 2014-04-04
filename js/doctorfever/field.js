@@ -171,6 +171,10 @@ Field.prototype.getGfxData = function(canvas) {
  * positioning of the field.
  */
 Field.prototype.drawBoard = function(canvas) {
+    this._drawPuyosOnTheFloor(canvas);
+    this._drawBoardPuyos(canvas);
+};
+Field.prototype._drawBoardPuyos = function(canvas) {
     var i = this.index;
     var gfx = this.getGfxData(canvas);
     for (var x = 0; x < this.state.size[0]; x++) {
@@ -187,6 +191,41 @@ Field.prototype.drawBoard = function(canvas) {
                         gfx.puyoSize
                 );
             }
+        }
+    }
+};
+Field.prototype._drawPuyosOnTheFloor = function(canvas) {
+    var me = this;
+    var getMinBottom = function(x) {;
+        for (var y = 0; y < me.state.size[1]; y++) {
+            var puyo = me.state.getPuyoAt(x, y);
+            if (puyo && puyo.velocity[1] == 0) return y;
+        }
+        return me.state.size[1];
+    };
+
+    var gfx = this.getGfxData(canvas);
+    // Draw small blocks
+    if (this.state.block !== undefined) {
+        var puyos = this.state.block.puyos;
+        var smallestY = (function(){
+            var y = Infinity;
+            for (var i = 0; i < puyos.length; i++) {
+                y = Math.min(y, puyos[i].position[1]);
+            }
+            return Math.floor(y);
+        })();
+        for (var i = 0; i < puyos.length; i++) {
+            var x = Math.floor(puyos[i].position[0]);
+            var y = getMinBottom(x) - ((Math.floor(puyos[i].position[1]) - smallestY)) - 1;
+            puyos[i].draw(
+                canvas.ctx,
+                x * (gfx.puyoSize[0] + gfx.puyoPadding[0]) +
+                    gfx.boardOffset[0] + gfx.puyoSize[0]*0.66/2,
+                y * (gfx.puyoSize[1] + gfx.puyoPadding[1]) +
+                    gfx.boardOffset[1] + gfx.puyoSize[1]*0.66/2,
+                [gfx.puyoSize[0]*0.33, gfx.puyoSize[1]*0.33]
+            );
         }
     }
 };
