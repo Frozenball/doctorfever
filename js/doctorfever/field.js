@@ -347,10 +347,9 @@ Field.prototype.drawBackground = function(canvas) {
     var ctx = canvas.ctx;
     var gfx = this.getGfxData(canvas);
     var state = this.state;
-
-    var b = 32;
-    var r= 32;
-    var g = 32;
+    
+    // Calculate field backround fill color - changes when on-going chain
+    var b = 32, r= 32, g = 32;
     if (this.chains) {
         b = this.chains[this.chains.length - 1].sets.length / 10 * 400;
         r = this.chains[this.chains.length - 1].sets.length / 20 * 400;
@@ -365,6 +364,9 @@ Field.prototype.drawBackground = function(canvas) {
                                 Math.ceil(0.1 * r) +"," +
                                 Math.ceil(0.1 * g) + "," +
                                 Math.ceil(0.1 * b) + ", 0.2)");
+    
+    // Save old and set new context style
+    ctx.save();
     ctx.fillStyle = bgGradient;
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 5;
@@ -372,19 +374,25 @@ Field.prototype.drawBackground = function(canvas) {
     ctx.shadowOffsetY = 15;
 
     if (this.gameover) {
+
+        //Game over effect background fill
         this.gameoverBackground.x += this.gameoverBackground.velocityX;
         this.gameoverBackground.y += this.gameoverBackground.velocityY;
         this.gameoverBackground.angle += 3;
         this.gameoverBackground.velocityY += 0.5;
-
         //ctx.rotate((Math.PI / 180) * this.gameoverBackground.angle);
         ctx.fillRect(gfx.boardOffset[0] + this.gameoverBackground.x, gfx.boardOffset[1] + this.gameoverBackground.y, gfx.boardSize[0], gfx.boardSize[1]);
         //ctx.rotate(0);
+        
     } else {
+
+        // Normal background fill
         ctx.fillRect(gfx.boardOffset[0], gfx.boardOffset[1], gfx.boardSize[0], gfx.boardSize[1]);
+    
     }
 
-    ctx.shadowColor = 'none';
+    // Restore old context style
+    ctx.restore();
 };
 
 Field.prototype.drawTrashMeter = function(canvas) {
